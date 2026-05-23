@@ -1,0 +1,14 @@
+{
+  "llvm": {
+    "clang_executable": "/mnt/storage/ssdbig/llvm/llvm-22/bin/clang",
+    "resource_dir": "/mnt/storage/ssdbig/llvm/llvm-22/lib/clang/22"
+  },
+  "compiler": {
+    "standard": "c++20",
+    "optimization": "O2",
+    "extra_flags": ["-lstdc++", "-lm"]
+  },
+  "output": {
+    "output_dir": "build"
+  }
+}

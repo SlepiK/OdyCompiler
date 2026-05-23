@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install CMake 4.1
+        run: |
+          pip install cmake==4.1.0
+          echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
+
+      - name: Cache LLVM 22
+        uses: actions/cache@v4
+        id: cache-llvm
+        with:
+            path: ~/llvm-22
+            key: llvm-22.1.0-linux-x64
+
+      - name: Download LLVM 22
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.0/LLVM-22.1.0-Linux-X64.tar.xz
+          mkdir -p ~/llvm-22
+          tar -xf LLVM-22.1.0-Linux-X64.tar.xz -C ~/llvm-22 --strip-components=1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libstdc++-14-dev zstd ninja-build
+
+      - name: Remove system LLVM/Clang
+        run: |
+          sudo apt-get remove -y llvm* clang* libclang*
+          sudo apt-get autoremove -y
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_INSTALL_DIR=$HOME/llvm-22
+
+      - name: Build
+        run: cmake --build build --parallel
