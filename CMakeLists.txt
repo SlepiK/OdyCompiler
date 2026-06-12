@@ -67,6 +67,11 @@ add_executable(odysseus_sierra_cpp
         ${SOURCES}
 )
 
+target_compile_definitions(odysseus_sierra_cpp PRIVATE
+        LLVM_CLANG_EXECUTABLE="${LLVM_INSTALL_DIR}/bin/clang"
+        LLVM_RESOURCE_DIR="${LLVM_INSTALL_DIR}/lib/clang/${LLVM_VERSION_MAJOR}"
+)
+
 target_include_directories(odysseus_sierra_cpp PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/CompilerMain/include"
 
