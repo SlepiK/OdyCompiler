@@ -1,6 +1,3 @@
-
-#include "Log/Logger.h"
-#include "Log/Standard/StandardConsoleLog.h"
 #include <spdlog/spdlog.h>
 #include "Config/Config.h"
 
@@ -9,7 +6,6 @@
 #include "clang/Basic/DiagnosticOptions.h"
 #include "clang/Driver/Driver.h"
 #include "clang/Driver/Compilation.h"
-#include "cmake-build-debug/_deps/spdlog-src/include/spdlog/spdlog.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/VirtualFileSystem.h"
