@@ -1,5 +1,4 @@
 #include <spdlog/spdlog.h>
-#include "Config/Config.h"
 
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/TextDiagnosticPrinter.h"
@@ -23,8 +22,6 @@
 int main(int argc, char* argv[]) {
     spdlog::info("Starting Compilation");
 
-    auto config = sierra::v1::compiler::config::CompilerConfig::loadAuto(argv[0]);
-
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
     llvm::InitializeNativeTargetAsmParser();
@@ -39,30 +36,26 @@ int main(int argc, char* argv[]) {
     std::string targetTriple = llvm::sys::getDefaultTargetTriple();
 
     clang::driver::Driver driver(
-        config.clangExecutable,  // ClangExecutable
+        "/mnt/storage/ssdbig/llvm/llvm-22/bin/clang",  // ClangExecutable
         targetTriple,
         diags
     );
 
-    driver.ResourceDir = config.resourceDir;
-
-    std::string stdFlag  = "-std=" + config.standard;
-    std::string optFlag  = "-" + config.optimization;
+    driver.ResourceDir = "/mnt/storage/ssdbig/llvm/llvm-22/lib/clang/22";
 
     std::vector<std::string> argsstd = {
-        config.clangExecutable,
-        stdFlag,
-        optFlag,
+        "/mnt/storage/ssdbig/llvm/llvm-22/bin/clang",
+        "-std=c++20",
+        "-O2",
         "/home/simon/CLionProjects/odysseus_sierra_cpp/Executer.cpp",
         "-o", "/home/simon/CLionProjects/odysseus_sierra_cpp/build/Executer",
     };
 
-    for (auto &f : config.extraFlags)
-        argsstd.push_back(f);
-
     std::vector<const char *> args;
     for (auto &s : argsstd)
         args.push_back(s.c_str());
+    args.push_back("-lstdc++");
+    args.push_back("-lm");
 
     std::unique_ptr<clang::driver::Compilation> compilation(
         driver.BuildCompilation(args)
