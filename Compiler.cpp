@@ -36,15 +36,15 @@ int main(int argc, char* argv[]) {
     std::string targetTriple = llvm::sys::getDefaultTargetTriple();
 
     clang::driver::Driver driver(
-        "/mnt/storage/ssdbig/llvm/llvm-22/bin/clang",  // ClangExecutable
+        LLVM_CLANG_EXECUTABLE,  // ClangExecutable
         targetTriple,
         diags
     );
 
-    driver.ResourceDir = "/mnt/storage/ssdbig/llvm/llvm-22/lib/clang/22";
+    driver.ResourceDir = LLVM_RESOURCE_DIR;
 
     std::vector<std::string> argsstd = {
-        "/mnt/storage/ssdbig/llvm/llvm-22/bin/clang",
+        LLVM_CLANG_EXECUTABLE,
         "-std=c++20",
         "-O2",
         "/home/simon/CLionProjects/odysseus_sierra_cpp/Executer.cpp",
