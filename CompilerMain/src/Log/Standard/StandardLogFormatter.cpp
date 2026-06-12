@@ -11,9 +11,6 @@ namespace sierra::v1::compiler::log::standard {
         buffer.clear();
         buffer.reserve(128);
 
-        buffer.append(config::app_name);
-        buffer.append("]");
-
         buffer.append("[");
         buffer.append(std::format("{:%H:%M:%S %d-%m-%Y}", log_event.timestamp));
         buffer.append("]");

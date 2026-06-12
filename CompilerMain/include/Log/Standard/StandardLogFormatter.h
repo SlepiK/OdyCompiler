@@ -4,7 +4,6 @@
 
 #include "Log/ILogFormatter.h"
 #include "Log/LogEvent.h"
-#include "Config/Config.h"
 
 namespace sierra::v1::compiler::log::standard {
     class LogFormatter : public ILogFormatter {
