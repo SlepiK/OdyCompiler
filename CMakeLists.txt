@@ -16,6 +16,8 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.17.0
 )
+set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(SPDLOG_FMT_EXTERNAL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(spdlog)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -72,7 +74,7 @@ target_include_directories(odysseus_sierra_cpp PRIVATE
 
 target_link_libraries(odysseus_sierra_cpp PRIVATE
         nlohmann_json::nlohmann_json
-        spdlog::spdlog
+        spdlog::spdlog_header_only
 
         # Clang frontend
         clangFrontend
