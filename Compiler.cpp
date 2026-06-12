@@ -1,6 +1,7 @@
 
 #include "Log/Logger.h"
 #include "Log/Standard/StandardConsoleLog.h"
+#include <spdlog/spdlog.h>
 #include "Config/Config.h"
 
 #include "clang/Frontend/CompilerInstance.h"
@@ -8,6 +9,7 @@
 #include "clang/Basic/DiagnosticOptions.h"
 #include "clang/Driver/Driver.h"
 #include "clang/Driver/Compilation.h"
+#include "cmake-build-debug/_deps/spdlog-src/include/spdlog/spdlog.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/VirtualFileSystem.h"
@@ -23,9 +25,7 @@
  */
 
 int main(int argc, char* argv[]) {
-    auto log = sierra::v1::compiler::log::Logger();
-    log.setLog(std::make_unique<sierra::v1::compiler::log::standard::ConsoleLog>());
-    log.info("Starting Compilation");
+    spdlog::info("Starting Compilation");
 
     auto config = sierra::v1::compiler::config::CompilerConfig::loadAuto(argv[0]);
 
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     );
 
     if (!compilation) {
-        std::cerr << "Failed to build compilation!\n";
+        spdlog::critical("Failed to build compilation");
         return 1;
     }
 
@@ -82,13 +82,13 @@ int main(int argc, char* argv[]) {
 
     if (result != 0) {
         for (auto &[code, cmd] : failingCmds) {
-            std::cerr << "Command failed with code " << code << "\n";
+            spdlog::critical("Command failed with code {}", code);
         }
-        std::cerr << "Compilation failed!\n";
+        spdlog::error("Compilation failed");
         return 1;
     }
 
-    log.info("Compiled and Linked");
+    spdlog::info("Compiled and Linked");
 
     return 0;
 }
