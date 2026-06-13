@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
         LLVM_CLANG_EXECUTABLE,
         "-std=c++20",
         "-O2",
-        "/home/simon/CLionProjects/odysseus_sierra_cpp/Executer.cpp",
-        "-o", "/home/simon/CLionProjects/odysseus_sierra_cpp/build/Executer",
+        "/home/simon/CLionProjects/OdyCompiler/Executer.cpp",
+        "-o", "/home/simon/CLionProjects/OdyCompiler/build/Executer",
     };
 
     std::vector<const char *> args;
