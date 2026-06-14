@@ -10,6 +10,8 @@
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/TargetParser/Host.h"
 
+#include "Compiler/Compiler.h"
+
 /***
  * ToDo:
  * 1. ArgParser (not perfect)
@@ -21,6 +23,8 @@
 
 int main(int argc, char* argv[]) {
     spdlog::info("Starting Compilation");
+
+    Sierra::OdyCompiler::v1::Compiler::Compiler compiler;
 
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();

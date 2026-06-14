@@ -5,8 +5,8 @@ namespace Sierra::OdyCompiler::v1::Compiler {
     class ICompiler {
     public:
         virtual ~ICompiler() = default;
-        virtual void compile() = 0;
-        virtual void setCallArguments(int argc, char* argv[]) = 0;
+        //virtual void compile() = 0;
+        //virtual void setCallArguments(int argc, char* argv[]) = 0;
     };
 } // Sierra::OdyCompiler::v1::Compiler
 
