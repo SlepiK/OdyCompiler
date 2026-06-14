@@ -4,13 +4,16 @@
 #include <memory>
 
 #include "Compiler/ICompiler.h"
+#include "Config/CompilerConfig.h"
 
 namespace Sierra::OdyCompiler::v1::Compiler {
     class BaseCompiler : public ICompiler {
     public:
-        explicit BaseCompiler() {}
+        BaseCompiler();
         ~BaseCompiler() override = default;
     protected:
+
+        Config::CompilerConfig m_config;
     };
 } // Sierra
 
