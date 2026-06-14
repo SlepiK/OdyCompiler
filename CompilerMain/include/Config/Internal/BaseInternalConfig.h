@@ -1,9 +1,0 @@
-#ifndef SIERRA_ODYCOMPILER_V1_CONFIG_INTERNAL_BASEINTERNALCONFIG_H
-#define SIERRA_ODYCOMPILER_V1_CONFIG_INTERNAL_BASEINTERNALCONFIG_H
-
-namespace Sierra::OdyCompiler::v1::Config::Internal {
-    class BaseInternalConfig {
-    };
-} // Sierra::v1::Compiler::Config::Internal
-
-#endif //SIERRA_ODYCOMPILER_V1_CONFIG_INTERNAL_BASEINTERNALCONFIG_H
