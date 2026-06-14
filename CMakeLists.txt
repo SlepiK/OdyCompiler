@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 4.1)
 project(odysseus_sierra_cpp)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -74,7 +74,6 @@ target_compile_definitions(odysseus_sierra_cpp PRIVATE
 
 target_include_directories(odysseus_sierra_cpp PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/CompilerMain/include"
-
 )
 
 target_link_libraries(odysseus_sierra_cpp PRIVATE

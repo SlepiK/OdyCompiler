@@ -3,13 +3,16 @@
 
 #include <string>
 #include <typeindex>
+#include <optional>
+#include <expected>
 
 #include "IConfigArgument.h"
 
 namespace Sierra::OdyCompiler::v1::Config::Argument {
+    template <typename T>
     class BaseConfigArgument : public IConfigArgument {
     public:
-        BaseConfigArgument(bool is_required, std::string key, std::type_index type);
+        BaseConfigArgument(std::string key, T value, bool is_required = false);
 
         ~BaseConfigArgument() override = default;
 
@@ -19,10 +22,15 @@ namespace Sierra::OdyCompiler::v1::Config::Argument {
 
         std::string& getKey() override;
 
+        std::expected<std::reference_wrapper<T>, std::string> getValue();
+
     protected:
         bool m_is_required;
         std::string m_key;
         std::type_index m_type;
+
+    private:
+        std::optional<T> m_value;
     };
 } // Sierra::v1::Compiler::Config
 

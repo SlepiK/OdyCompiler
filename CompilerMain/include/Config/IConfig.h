@@ -12,6 +12,8 @@ namespace Sierra::OdyCompiler::v1::Config {
 
         virtual void validate() = 0;
 
+        virtual Argument::IConfigArgument& getArgument(const std::string& key) = 0;
+
     protected:
         virtual Argument::IConfigArgument& registerArgument(std::unique_ptr<Argument::IConfigArgument> argument) = 0;
 
