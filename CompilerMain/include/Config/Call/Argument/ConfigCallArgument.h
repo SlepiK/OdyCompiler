@@ -1,9 +1,0 @@
-#ifndef SIERRA_ODYCOMPILER_V1_CONFIG_CALL_ARGUMENT_CONFIGCALLARGUMENT_H
-#define SIERRA_ODYCOMPILER_V1_CONFIG_CALL_ARGUMENT_CONFIGCALLARGUMENT_H
-
-namespace Sierra::OdyCompiler::v1::Config::Call::Argument {
-    class ConfigCallArgument {
-    };
-} // Sierra::v1::Compiler::Config::Call::Argument
-
-#endif //SIERRA_ODYCOMPILER_V1_CONFIG_CALL_ARGUMENT_CONFIGCALLARGUMENT_H
