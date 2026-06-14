@@ -3,11 +3,11 @@
 
 #include <string>
 
-#include "../ConfigArgument.h"
+#include "../BaseConfigArgument.h"
 
 namespace Sierra::OdyCompiler::v1::Config::Argument::Call {
     template <typename T>
-    class ConfigCallArgument : public ConfigArgument<T>{
+    class ConfigCallArgument : public BaseConfigArgument<T>{
     public:
         explicit ConfigCallArgument();
 

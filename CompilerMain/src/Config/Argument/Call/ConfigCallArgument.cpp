@@ -3,7 +3,7 @@
 namespace Sierra::OdyCompiler::v1::Config::Argument::Call {
     template<typename T>
     ConfigCallArgument<T>::ConfigCallArgument()
-        : ConfigArgument<T>(std::nullopt) {
+        : BaseConfigArgument<T>(std::nullopt) {
     }
 
     template<typename T>

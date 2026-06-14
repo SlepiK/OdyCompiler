@@ -7,6 +7,7 @@
 
 #include "Config/IConfig.h"
 #include "Config/Argument/IConfigArgument.h"
+#include "Config/Argument/ConfigArgument.h"
 
 namespace Sierra::OdyCompiler::v1::Config {
     class BaseConfig : public IConfig {
@@ -14,6 +15,8 @@ namespace Sierra::OdyCompiler::v1::Config {
         BaseConfig();
 
         ~BaseConfig() override = default;
+
+        Argument::IConfigArgument& getArgument(const std::string& key) override;
 
     protected:
         std::unordered_map<std::string, std::unique_ptr<Argument::IConfigArgument>> m_arguments;
