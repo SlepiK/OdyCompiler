@@ -15,17 +15,10 @@ namespace Sierra::OdyCompiler::v1::Config {
 
         ~BaseConfig() override = default;
 
-        template <Argument::IConfigArgument T>
-        T get(const std::string& key) const {
-            auto& arg = this->m_arguments.at(key);
-            if (arg->getType() != typeid(T))
-                throw std::runtime_error("Type mismatch for key [" + key + "]");
-            return static_cast<Argument::IConfigArgument<T>*>(arg.get()).getValue();
-        }
-
-
     protected:
         std::unordered_map<std::string, std::unique_ptr<Argument::IConfigArgument>> m_arguments;
+
+        Argument::IConfigArgument& registerArgument(std::unique_ptr<Argument::IConfigArgument> argument) override;
     };
 } // Sierra::v1::Compiler::Config
 

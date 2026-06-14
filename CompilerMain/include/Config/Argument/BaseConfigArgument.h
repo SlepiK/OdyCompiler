@@ -17,6 +17,8 @@ namespace Sierra::OdyCompiler::v1::Config::Argument {
 
         std::type_index getType() override;
 
+        std::string& getKey() override;
+
     protected:
         bool m_is_required;
         std::string m_key;

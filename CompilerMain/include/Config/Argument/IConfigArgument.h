@@ -1,6 +1,7 @@
 #ifndef SIERRA_ODYCOMPILER_V1_CONFIG_ARGUMENT_ICONFIGARGUMENT_H
 #define SIERRA_ODYCOMPILER_V1_CONFIG_ARGUMENT_ICONFIGARGUMENT_H
 
+#include <string>
 #include <typeindex>
 
 namespace Sierra::OdyCompiler::v1::Config::Argument {
@@ -13,6 +14,8 @@ namespace Sierra::OdyCompiler::v1::Config::Argument {
         virtual bool isRequired() = 0;
 
         virtual std::type_index getType() = 0;
+
+        virtual std::string& getKey() = 0;
     };
 } // Sierra::v1::Compiler::Config::Argument
 

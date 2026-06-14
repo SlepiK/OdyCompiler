@@ -15,4 +15,8 @@ namespace Sierra::OdyCompiler::v1::Config::Argument {
     std::type_index BaseConfigArgument::getType() {
         return this->m_type;
     }
+
+    std::string& BaseConfigArgument::getKey() {
+        return this->m_key;
+    }
 } // Sierra::v1::Compiler::Config
