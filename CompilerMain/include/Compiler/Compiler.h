@@ -4,7 +4,7 @@
 #include "BaseCompiler.h"
 
 namespace Sierra::OdyCompiler::v1::Compiler {
-    class Compiler : BaseCompiler {
+    class Compiler : public BaseCompiler {
     public:
         Compiler();
     };
