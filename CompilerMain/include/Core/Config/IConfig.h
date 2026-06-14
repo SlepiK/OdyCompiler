@@ -4,8 +4,7 @@
 #include <memory>
 #include <expected>
 
-#include "Core/Config/Argument/IConfigStaticArgument.h"
-#include "Core/Config/Argument/IConfigDynamicArgument.h"
+#include "Core/Config/Argument/IConfigArgument.h"
 
 namespace Sierra::OdyCompiler::v1::Core::Config {
     class IConfig {
@@ -14,11 +13,10 @@ namespace Sierra::OdyCompiler::v1::Core::Config {
 
         virtual std::expected<void, std::string> validate() = 0;
 
-        virtual std::expected<void, std::string> parseDynamicArguments(int argc, char* argv[]) = 0;
+        virtual std::expected<void, std::string> parse(int argc, char* argv[]) = 0;
 
     protected:
-        virtual Argument::IConfigStaticArgument& registerStaticArgument(std::unique_ptr<Argument::IConfigStaticArgument> argument) = 0;
-        virtual Argument::IConfigDynamicArgument& registerDynamicArgument(std::unique_ptr<Argument::IConfigDynamicArgument> argument) = 0;
+        virtual Argument::IConfigArgument& registerArgument(std::unique_ptr<Argument::IConfigArgument> argument) = 0;
 
     };
 } // Sierra::OdyCompiler::v1::Core::Config

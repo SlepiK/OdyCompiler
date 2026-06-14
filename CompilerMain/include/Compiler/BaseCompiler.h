@@ -11,8 +11,10 @@ namespace Sierra::OdyCompiler::v1::Compiler {
     public:
         BaseCompiler();
         ~BaseCompiler() override = default;
-    protected:
 
+        Config::CompilerConfig& getConfig() override;
+
+    protected:
         Config::CompilerConfig m_config;
     };
 } // Sierra
