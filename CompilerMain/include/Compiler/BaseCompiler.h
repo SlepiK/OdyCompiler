@@ -2,6 +2,8 @@
 #define SIERRA_ODYCOMPILER_V1_COMPILER_BASECOMPILER_H
 
 #include <CLI/CLI.hpp>
+#include "Builder/IBuilder.h"
+#include "Translater/ITranslater.h"
 #include "Compiler/ICompiler.h"
 
 namespace Sierra::OdyCompiler::v1::Compiler {
@@ -15,6 +17,8 @@ namespace Sierra::OdyCompiler::v1::Compiler {
         void configure();
 
     protected:
+        Builder::IBuilder m_builder;
+        Translater::ITranslater m_translater;
         CLI::App m_config;
         bool m_compile;
         std::string m_logical_plan_path;
