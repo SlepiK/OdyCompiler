@@ -4,10 +4,12 @@
 
 namespace Sierra::OdyCompiler::v1::Compiler {
     Compiler::Compiler() {
-        auto result = m_config.getArgument<int>("llvm_version");
-        if (result) {
-            int& value = result->get().getValue()->get();
-            spdlog::info("CONFIG {}", value);
-        }
+    }
+
+    void Compiler::extended_config() {
+    }
+
+    void Compiler::compile() {
+
     }
 }

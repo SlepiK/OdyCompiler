@@ -1,10 +1,8 @@
 #ifndef SIERRA_ODYCOMPILER_V1_COMPILER_BASECOMPILER_H
 #define SIERRA_ODYCOMPILER_V1_COMPILER_BASECOMPILER_H
 
-#include <memory>
-
+#include <CLI/CLI.hpp>
 #include "Compiler/ICompiler.h"
-#include "Config/CompilerConfig.h"
 
 namespace Sierra::OdyCompiler::v1::Compiler {
     class BaseCompiler : public ICompiler {
@@ -12,10 +10,17 @@ namespace Sierra::OdyCompiler::v1::Compiler {
         BaseCompiler();
         ~BaseCompiler() override = default;
 
-        Config::CompilerConfig& getConfig() override;
+        CLI::App& getConfig() override;
+
+        void configure();
 
     protected:
-        Config::CompilerConfig m_config;
+        CLI::App m_config;
+        bool m_compile;
+        std::string m_logical_plan_path;
+
+        virtual void extended_config() = 0;
+
     };
 } // Sierra
 
