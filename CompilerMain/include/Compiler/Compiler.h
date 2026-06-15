@@ -7,6 +7,11 @@ namespace Sierra::OdyCompiler::v1::Compiler {
     class Compiler : public BaseCompiler {
     public:
         Compiler();
+
+        void compile() override;
+
+    protected:
+        void extended_config() override;
     };
 } // Sierra::OdyCompiler::v1::Compiler
 

@@ -21,6 +21,21 @@ set(SPDLOG_FMT_EXTERNAL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(spdlog)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+message(STATUS "Searching CLI11")
+find_package(CLI11 QUIET)
+if(NOT CLI11_FOUND)
+        message(STATUS "CLI11 not found, fetching...")
+        FetchContent_Declare(
+                cli11
+                GIT_REPOSITORY https://github.com/CLIUtils/CLI11
+                GIT_TAG v2.6.2
+        )
+        FetchContent_MakeAvailable(cli11)
+        message(STATUS "CLI11 fetched")
+else ()
+    message(STATUS "CLI11 found")
+endif()
+
 find_package(zstd QUIET)
 if(NOT zstd_FOUND)
     # Fedora: zstd-devel installieren falls nicht vorhanden
@@ -63,7 +78,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 )
 
 add_executable(odysseus_sierra_cpp
-        Compiler.cpp
+        OdyCompiler.cpp
         ${SOURCES}
 )
 
@@ -79,6 +94,7 @@ target_include_directories(odysseus_sierra_cpp PRIVATE
 target_link_libraries(odysseus_sierra_cpp PRIVATE
         nlohmann_json::nlohmann_json
         spdlog::spdlog_header_only
+        CLI11::CLI11
 
         # Clang frontend
         clangFrontend

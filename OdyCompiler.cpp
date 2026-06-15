@@ -25,10 +25,8 @@ int main(int argc, char* argv[]) {
     spdlog::info("Starting Compilation");
 
     Sierra::OdyCompiler::v1::Compiler::Compiler compiler;
-    auto& config = compiler.getConfig();
-    config.parse(argc, argv);
-    spdlog::info("LLVM={}",config.getArgument<int>("llvm_version")->get().getValue()->get());
-
+    compiler.configure();
+    CLI11_PARSE(compiler.getConfig(),argc,argv);
 
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
