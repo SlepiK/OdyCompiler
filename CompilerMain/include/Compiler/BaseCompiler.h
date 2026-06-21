@@ -2,9 +2,13 @@
 #define SIERRA_ODYCOMPILER_V1_COMPILER_BASECOMPILER_H
 
 #include <CLI/CLI.hpp>
+
+#include "Compiler/ICompiler.h"
 #include "Builder/IBuilder.h"
 #include "Translater/ITranslater.h"
-#include "Compiler/ICompiler.h"
+#include "Optimizer/Optimizer.h"
+
+#include "Plan/BasePlan.h"
 
 namespace Sierra::OdyCompiler::v1::Compiler {
     class BaseCompiler : public ICompiler {
@@ -19,6 +23,10 @@ namespace Sierra::OdyCompiler::v1::Compiler {
     protected:
         Builder::IBuilder m_builder;
         Translater::ITranslater m_translater;
+        Optimizer::IOptimizer m_optimizer;
+
+        Plan::IPlan m_plan;
+
         CLI::App m_config;
         bool m_compile;
         std::string m_logical_plan_path;

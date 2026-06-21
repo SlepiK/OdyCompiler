@@ -3,11 +3,16 @@
 
 #include "ITranslater.h"
 
+#include "Plan/BasePlan.h"
+
 namespace Sierra::OdyCompiler::v1::Translater {
     class BaseTranslater : public ITranslater {
     public:
         BaseTranslater();
         ~BaseTranslater() override = default;
+
+    protected:
+        Plan::IPlan m_plan;
     };
 } // Sierra::OdyCompiler::v1::Translater
 
