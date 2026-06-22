@@ -3,6 +3,8 @@
 
 namespace Sierra::OdyPlan::v1::Operator {
     class IOperator {
+    public:
+        virtual ~IOperator() = default;
     };
 } // Sierra::OdyPlan::v1::Operator
 

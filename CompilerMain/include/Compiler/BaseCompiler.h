@@ -8,8 +8,6 @@
 #include "Translater/ITranslater.h"
 #include "Optimizer/Optimizer.h"
 
-#include "Plan/BasePlan.h"
-
 namespace Sierra::OdyCompiler::v1::Compiler {
     class BaseCompiler : public ICompiler {
     public:
@@ -24,8 +22,6 @@ namespace Sierra::OdyCompiler::v1::Compiler {
         Builder::IBuilder m_builder;
         Translater::ITranslater m_translater;
         Optimizer::IOptimizer m_optimizer;
-
-        Plan::IPlan m_plan;
 
         CLI::App m_config;
         bool m_compile;
