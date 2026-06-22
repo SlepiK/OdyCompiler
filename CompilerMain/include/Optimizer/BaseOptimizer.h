@@ -3,8 +3,6 @@
 
 #include "IOptimizer.h"
 
-#include "Plan/BasePlan.h"
-
 namespace Sierra::OdyCompiler::v1::Optimizer {
     class BaseOptimizer : public IOptimizer {
     public:
@@ -12,7 +10,6 @@ namespace Sierra::OdyCompiler::v1::Optimizer {
         ~BaseOptimizer() override = default;
 
     protected:
-        Plan::IPlan m_plan;
     };
 } // Sierra::OdyCompiler::v1::Optimizer
 

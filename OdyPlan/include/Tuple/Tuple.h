@@ -1,12 +1,12 @@
-#ifndef SIERRA_ODYPLAN_V1_OPERATOR_TUPLE_TUPLE_H
-#define SIERRA_ODYPLAN_V1_OPERATOR_TUPLE_TUPLE_H
+#ifndef SIERRA_ODYPLAN_V1_TUPLE_TUPLE_H
+#define SIERRA_ODYPLAN_V1_TUPLE_TUPLE_H
 
 #include <tuple>
 #include <type_traits>
 
 #include "TupleField.h"
 
-namespace Sierra::OdyPlan::v1::Operator::Tuple {
+namespace Sierra::OdyPlan::v1::Tuple {
     template <typename T>
     struct is_std_tuple_of_odyfields : std::false_type {};
 
@@ -21,6 +21,6 @@ namespace Sierra::OdyPlan::v1::Operator::Tuple {
 
     template <TupleField... Ts>
     using TupleT = std::tuple<Ts...>;
-} // Sierra::OdyPlan::v1::Operator::Tuple
+} // Sierra::OdyPlan::v1::Tuple
 
-#endif //SIERRA_ODYPLAN_V1_OPERATOR_TUPLE_TUPLE_H
+#endif //SIERRA_ODYPLAN_V1_TUPLE_TUPLE_H

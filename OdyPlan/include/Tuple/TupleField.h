@@ -1,10 +1,10 @@
-#ifndef SIERRA_ODYPLAN_V1_OPERATOR_TUPLE_TUPLEFIELD_H
-#define SIERRA_ODYPLAN_V1_OPERATOR_TUPLE_TUPLEFIELD_H
+#ifndef SIERRA_ODYPLAN_V1_TUPLE_TUPLEFIELD_H
+#define SIERRA_ODYPLAN_V1_TUPLE_TUPLEFIELD_H
 
 #include <tuple>
 #include <type_traits>
 
-namespace Sierra::OdyPlan::v1::Operator::Tuple {
+namespace Sierra::OdyPlan::v1::Tuple {
     template <typename T, auto Name>
     struct TupleFieldT {
         T value;
@@ -21,6 +21,6 @@ namespace Sierra::OdyPlan::v1::Operator::Tuple {
 
     template<typename T>
     concept TupleField = is_tuple_field_v<T>;
-} // Sierra::OdyPlan::v1::Operator::Tuple
+} // Sierra::OdyPlan::v1::Tuple
 
-#endif //SIERRA_ODYPLAN_V1_OPERATOR_TUPLE_TUPLEFIELD_H
+#endif //SIERRA_ODYPLAN_V1_TUPLE_TUPLEFIELD_H
