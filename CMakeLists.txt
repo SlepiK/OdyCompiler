@@ -1,129 +1,43 @@
 cmake_minimum_required(VERSION 4.1)
-project(odysseus_sierra_cpp)
+project(OdyCompiler VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
-
-include(FetchContent)
-FetchContent_Declare(
-        nlohmann_json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG        v3.12.0
-)
-FetchContent_MakeAvailable(nlohmann_json)
-
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.17.0
-)
-set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-set(SPDLOG_FMT_EXTERNAL OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(spdlog)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
-message(STATUS "Searching CLI11")
-find_package(CLI11 QUIET)
-if(NOT CLI11_FOUND)
-        message(STATUS "CLI11 not found, fetching...")
-        FetchContent_Declare(
-                cli11
-                GIT_REPOSITORY https://github.com/CLIUtils/CLI11
-                GIT_TAG v2.6.2
-        )
-        FetchContent_MakeAvailable(cli11)
-        message(STATUS "CLI11 fetched")
-else ()
-    message(STATUS "CLI11 found")
-endif()
+option(ENABLE_TOOLING "Enable clang-tidy/format targets" ON)
+option(ENABLE_CLANG_TIDY "Run clang-tidy as part of the build" OFF)
+option(ENABLE_CLANG_FORMAT_CHECK "Enable clang-format/format-check targets" OFF)
 
-find_package(zstd QUIET)
-if(NOT zstd_FOUND)
-    # Fedora: zstd-devel installieren falls nicht vorhanden
-    find_library(ZSTD_LIB NAMES zstd REQUIRED)
-    add_library(zstd::libzstd_static UNKNOWN IMPORTED)
-    set_target_properties(zstd::libzstd_static PROPERTIES
-            IMPORTED_LOCATION "${ZSTD_LIB}"
-    )
-endif()
-
-if(NOT LLVM_INSTALL_DIR)
-    set(LLVM_INSTALL_DIR /mnt/storage/ssdbig/llvm/llvm-22)
-endif()
-
-set(LLVM_DIR  ${LLVM_INSTALL_DIR}/lib/cmake/llvm)
-set(Clang_DIR ${LLVM_INSTALL_DIR}/lib/cmake/clang)
-
-find_package(LLVM REQUIRED CONFIG
-    PATHS "${LLVM_DIR}"
-    NO_DEFAULT_PATH)
-
-find_package(Clang REQUIRED CONFIG
-    PATHS "${Clang_DIR}"
-    NO_DEFAULT_PATH)
-
-message(STATUS "FOUND LLVM ${LLVM_VERSION}: ${LLVM_DIR}")
-message(STATUS "FOUND Clang ${Clang_VERSION}: ${Clang_DIR}")
-
-include_directories(${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
-
-if(LLVM_ENABLE_ABI_BREAKING_CHECKS)
-    add_definitions(-DLLVM_ENABLE_ABI_BREAKING_CHECKS=1)
-else()
-    add_definitions(-DLLVM_ENABLE_ABI_BREAKING_CHECKS=0)
-endif()
-
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/CompilerMain/src/*.cpp"
+define_property(GLOBAL PROPERTY LINT_SOURCE_FILES_GLOBAL
+        BRIEF_DOCS "Aggregated list of source and header files for linting"
+        FULL_DOCS "..."
 )
+set_property(GLOBAL PROPERTY LINT_SOURCE_FILES_GLOBAL "")
 
-add_executable(odysseus_sierra_cpp
-        OdyCompiler.cpp
-        ${SOURCES}
+define_property(GLOBAL PROPERTY TIDY_SOURCE_FILES_GLOBAL
+        BRIEF_DOCS "Aggregated .cpp files for clang-tidy (NO headers!)"
+        FULL_DOCS "..."
 )
+set_property(GLOBAL PROPERTY TIDY_SOURCE_FILES_GLOBAL "")
 
-target_compile_definitions(odysseus_sierra_cpp PRIVATE
-        LLVM_CLANG_EXECUTABLE="${LLVM_INSTALL_DIR}/bin/clang"
-        LLVM_RESOURCE_DIR="${LLVM_INSTALL_DIR}/lib/clang/${LLVM_VERSION_MAJOR}"
+define_property(GLOBAL PROPERTY TIDY_HEADER_TARGETS_GLOBAL
+        BRIEF_DOCS "Names of header-check object targets for clang-tidy"
+        FULL_DOCS "..."
 )
+set_property(GLOBAL PROPERTY TIDY_HEADER_TARGETS_GLOBAL "")
 
-target_include_directories(odysseus_sierra_cpp PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/CompilerMain/include"
-)
+include(cmake/dependencies.cmake)
 
-target_link_libraries(odysseus_sierra_cpp PRIVATE
-        nlohmann_json::nlohmann_json
-        spdlog::spdlog_header_only
-        CLI11::CLI11
+include(cmake/llvm.cmake)
 
-        # Clang frontend
-        clangFrontend
-        clangFrontendTool
-        clangDriver
-        clangSerialization
-        clangCodeGen
-        clangParse
-        clangSema
-        clangAnalysis
-        clangAST
-        clangASTMatchers
-        clangEdit
-        clangLex
-        clangBasic
+if(ENABLE_TOOLING)
+    include(cmake/tooling.cmake)
+endif ()
 
-        # LLVM backend
-        LLVMX86CodeGen
-        LLVMX86AsmParser
-        LLVMX86Desc
-        LLVMX86Info
-        LLVMPasses
-        LLVMipo
-        LLVMLinker
-        LLVMBitWriter
-        LLVMTarget
-        LLVMMC
-        LLVMMCParser
-        LLVMSupport
-        LLVMCore
-        LLVMAnalysis
-)
+add_subdirectory(odycompiler)
+add_subdirectory(examples)
+
+if(ENABLE_TOOLING)
+    finalize_lint_targets()
+endif ()
