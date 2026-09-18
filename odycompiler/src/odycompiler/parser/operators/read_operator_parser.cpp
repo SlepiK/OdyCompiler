@@ -1,4 +1,4 @@
-#include <odycompiler/parser/operators/ReadOperatorParser.h>
+#include <odycompiler/parser/operators/read_operator_parser.h>
 #include <spdlog/spdlog.h>
 
 namespace sierra::odycompiler::parser {
