@@ -13,7 +13,7 @@ namespace sierra::odycompiler::parser {
 
         virtual std::unique_ptr<sierra::odyplan::v3::core::logical::plan::Plan> parse(const std::string& input) = 0;
 
-        virtual std::string getName() const = 0;
+        virtual const std::string& getName() const = 0;
     };
 }
 

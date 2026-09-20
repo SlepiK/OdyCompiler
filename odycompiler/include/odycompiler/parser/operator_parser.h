@@ -9,9 +9,9 @@ namespace sierra::odycompiler::parser {
     public:
         virtual ~IOperatorParser() = default;
 
-        virtual std::unique_ptr<odyplan::v3::core::logical::operators::IOperator>parse(const nlohmann::json& config) = 0;
+        virtual std::unique_ptr<odyplan::v3::core::logical::operators::IOperator> parse(const nlohmann::json& config) = 0;
 
-        virtual odyplan::v3::core::shared::types::OperatorTypeId getOperatorType();
+        [[nodiscard]] virtual odyplan::v3::core::shared::types::OperatorTypeId getOperatorType() const = 0;
     };
 }
 
