@@ -94,18 +94,18 @@ jobs:
 
       - name: Configure OdyCompiler
         run: |
-          cmake -S . -B cmake-build-debug -G Ninja \
+          cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DOdyPlan_ROOT=${{ env.ODYPLAN_ROOT }} \
 
       - name: Build OdyCompiler
         run: |
-          cmake --build cmake-build-debug --target odycompiler -j$(nproc)
+          cmake --build build --target odycompiler -j$(nproc)
 
       - name: Build Examples
         run: cmake --build build --target odycompiler_example_all
 
       - name: Run tests
         run: |
-          cd cmake-build-debug
+          cd build
           ctest -R odycompiler_example --output-on-failure -j$(nproc)
