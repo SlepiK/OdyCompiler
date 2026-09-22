@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+env:
+  ODYPLAN_VERSION: "v0.6.1.8"
+  ODYPLAN_ROOT: ${{ github.workspace }}/odyplan-install
+  BUILD_TYPE: Release
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -58,16 +63,20 @@ jobs:
           cmake --version  
 
       - name: Download OdyPlan
+        env:
+          ODYPLAN_TOKEN: ${{ secrets.odycompiler }}
+          ODYPLAN_VERSION: ${{ env.ODYPLAN_VERSION }}
         run: |
-          ASSET_NAME="odyplan-${{ env.ODYPLAN_VERSION }}-linux-x86_64.tar.gz"
+          ASSET_NAME="odyplan-${ODYPLAN_VERSION}-linux-x86_64.tar.gz"
           echo "Downloading ${ASSET_NAME}..."
-        
+          
           wget -q \
-            --header="Authorization: Bearer ${{ secrets.odycompiler }}" \
-            https://github.com/SlepiK/OdyPlan/releases/download/${{ env.ODYPLAN_VERSION }}/${ASSET_NAME} \
+            --header="Authorization: Bearer ${ODYPLAN_TOKEN}" \
+            "https://github.com/SlepiK/OdyPlan/releases/download/${ODYPLAN_VERSION}/${ASSET_NAME}" \
             -O odyplan.tar.gz
-        
+          
           echo "Download complete!"
+          ls -la odyplan.tar.gz
 
       - name: Extract OdyPlan
         run: |
