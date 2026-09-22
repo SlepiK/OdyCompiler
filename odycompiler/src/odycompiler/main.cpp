@@ -11,7 +11,7 @@ void printUsage(const char* prg) {
     spdlog::info(" -s/--string <string>");
     spdlog::info("Output:");
     spdlog::info(" -op/--output <path>");
-    spdlog::info(" -l/--link <path> Link to executable");
+    spdlog::info(" -l/--link");
     spdlog::info("Parser:");
     spdlog::info(" -p/--parser <name>   Parser type: test, ody (default: test)");
     spdlog::info("Target:");

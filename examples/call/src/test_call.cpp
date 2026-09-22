@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
         config1.optimizationLevel = 2;
         config1.lnkExecutable = false;
         config1.parser = sierra::odycompiler::parser::testparser::TestPlanParser::PARSER;
-        config1.odyPlanLib = "/home/simon/dev/OdyPlan/install/lib64/";
-        config1.llvmLib = "/mnt/storage/ssdbig/llvm/llvm-22/lib/";
+        config1.odyPlanLib = ODYPLAN_LIB_PATH;
+        config1.llvmLib = LLVM_LIB_PATH;
         spdlog::set_level(spdlog::level::debug);
 
         sierra::odycompiler::Compiler compiler1(config1);
@@ -57,8 +57,8 @@ int main(int argc, char** argv) {
         config2.optimizationLevel = 2;
         config2.lnkExecutable = true;
         config2.parser = sierra::odycompiler::parser::testparser::TestPlanParser::PARSER;
-        config2.odyPlanLib = "/home/simon/dev/OdyPlan/install/lib64/";
-        config2.llvmLib = "/mnt/storage/ssdbig/llvm/llvm-22/lib/";
+        config2.odyPlanLib = ODYPLAN_LIB_PATH;
+        config2.llvmLib = LLVM_LIB_PATH;
         spdlog::set_level(spdlog::level::debug);
 
         sierra::odycompiler::Compiler compiler2(config2);
