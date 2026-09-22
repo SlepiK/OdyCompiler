@@ -64,7 +64,7 @@ jobs:
 
       - name: Download OdyPlan
         env:
-          ODYPLAN_TOKEN: ${{ secrets.odycompiler }}
+          ODYPLAN_TOKEN: ${{ secrets.ODYPLAN }}
           ODYPLAN_VERSION: ${{ env.ODYPLAN_VERSION }}
         run: |
           ASSET_NAME="odyplan-${ODYPLAN_VERSION}-linux-x86_64.tar.gz"
