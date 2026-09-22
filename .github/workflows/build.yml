@@ -14,42 +14,91 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install CMake 4.1
         run: |
           pip install cmake==4.1.0
           echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
 
-      - name: Cache LLVM 22
-        uses: actions/cache@v4
-        id: cache-llvm
-        with:
-            path: ~/llvm-22
-            key: llvm-22.1.0-linux-x64
-
-      - name: Download LLVM 22
-        if: steps.cache-llvm.outputs.cache-hit != 'true'
-        run: |
-          wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.0/LLVM-22.1.0-Linux-X64.tar.xz
-          mkdir -p ~/llvm-22
-          tar -xf LLVM-22.1.0-Linux-X64.tar.xz -C ~/llvm-22 --strip-components=1
-
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libstdc++-14-dev zstd ninja-build
+          sudo apt-get install -y \
+            libstdc++-14-dev \
+            libzstd-dev \
+            zstd \
+            ninja-build \
+            libspdlog-dev \
+            nlohmann-json3-dev \
+            libfmt-dev \
+            libffi-dev \
+            libedit-dev \
+            libcurl4-openssl-dev
 
       - name: Remove system LLVM/Clang
         run: |
           sudo apt-get remove -y llvm* clang* libclang*
           sudo apt-get autoremove -y
 
-      - name: Configure
+      - name: Install LLVM 22
         run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_INSTALL_DIR=$HOME/llvm-22
+          wget -q https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22 all
 
-      - name: Build
-        run: cmake --build build --parallel
+          echo "/usr/bin" >> $GITHUB_PATH
+          echo "LLVM_CONFIG=/usr/bin/llvm-config-22" >> $GITHUB_ENV
+
+      - name: Verify toolchain
+        run: |
+          clang-tidy-22 --version
+          clang++-22 --version
+          llvm-config-22 --version
+          cmake --version  
+
+      - name: Download OdyPlan
+        run: |
+          ASSET_NAME="odyplan-${{ env.ODYPLAN_VERSION }}-linux-x86_64.tar.gz"
+          echo "Downloading ${ASSET_NAME}..."
+        
+          wget -q \
+            --header="Authorization: Bearer ${{ secrets.odycompiler }}" \
+            https://github.com/YOUR-ORG/OdyPlan/releases/download/${{ env.ODYPLAN_VERSION }}/${ASSET_NAME} \
+            -O odyplan.tar.gz
+        
+          echo "Download complete!"
+
+      - name: Extract OdyPlan
+        run: |
+          mkdir -p ${{ env.ODYPLAN_ROOT }}
+          tar -xzf odyplan.tar.gz -C ${{ env.ODYPLAN_ROOT }} --strip-components=1
+          rm odyplan.tar.gz
+          
+          echo "OdyPlan extracted to ${{ env.ODYPLAN_ROOT }}"
+          ls -la ${{ env.ODYPLAN_ROOT }}
+
+      - name: Setup OdyPlan environment
+        run: |
+          echo "OdyPlan_DIR=${{ env.ODYPLAN_ROOT }}/lib64/cmake/OdyPlan" >> $GITHUB_ENV
+          echo "ODYPLAN_ROOT=${{ env.ODYPLAN_ROOT }}" >> $GITHUB_ENV
+
+      - name: Configure OdyCompiler
+        run: |
+          cmake -S . -B cmake-build-debug -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DOdyPlan_ROOT=${{ env.ODYPLAN_ROOT }} \
+            -DLLVM_DIR=${{ env.LLVM_DIR }}/lib/cmake/llvm \
+            -DCMAKE_PREFIX_PATH="${{ env.ODYPLAN_ROOT }};${{ env.LLVM_DIR }}"
+
+      - name: Build OdyCompiler
+        run: |
+          cmake --build cmake-build-debug --target odycompiler_example_plan -j$(nproc)
+
+      - name: Build Examples
+        run: cmake --build build --target odycompiler_example_all
+
+      - name: Run tests
+        run: |
+          cd cmake-build-debug
+          ctest -R odycompiler_example --output-on-failure -j$(nproc)
