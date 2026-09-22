@@ -1,3 +1,7 @@
+add_custom_target(odycompiler_example_plan
+        COMMENT "Building all OdyCompiler example plan tests"
+)
+
 if(TARGET odycompiler)
     message(STATUS "Using OdyCompiler from build target")
     set(ODYCOMPILER_EXECUTABLE "$<TARGET_FILE:odycompiler>")
@@ -76,6 +80,8 @@ function(add_ody_test NAME)
             "LD_LIBRARY_PATH=${ODYPLAN_LIB_DIR_RUNTIME}:${LLVM_LIB_DIR_RUNTIME}:$ENV{LD_LIBRARY_PATH}"
     )
 
+    set(TARGET_NAME "odycompiler_example_plan_${NAME}")
+
     add_custom_command(
             OUTPUT ${TEST_DIR}/.done
             COMMAND ${CMAKE_COMMAND} -E echo "=== ${NAME} ==="
@@ -90,16 +96,18 @@ function(add_ody_test NAME)
             VERBATIM
     )
 
-    add_custom_target(${NAME} ALL DEPENDS ${TEST_DIR}/.done)
+    add_custom_target(${TARGET_NAME} ALL DEPENDS ${TEST_DIR}/.done)
+
+    add_dependencies(odycompiler_example_plan ${TARGET_NAME})
 
     if(ARG_EXEC_EXPECTED)
         set(EXPECTED_FILE "${TEST_INPUT_DIR}/${ARG_EXEC_EXPECTED}")
         add_test(
-                NAME ${NAME}
+                NAME ${TARGET_NAME}
                 COMMAND ${CMAKE_COMMAND} -E compare_files ${TEST_DIR}/.done ${EXPECTED_FILE}
                 WORKING_DIRECTORY ${TEST_DIR}
         )
-        set_tests_properties(${NAME} PROPERTIES
+        set_tests_properties(${TARGET_NAME} PROPERTIES
                 WORKING_DIRECTORY ${TEST_DIR}
         )
     endif()
