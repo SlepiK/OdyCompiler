@@ -18,6 +18,10 @@ file(COPY
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+target_compile_definitions(example_test_call PRIVATE
+        ODYPLAN_LIB_PATH="${ODYPLAN_LIB_DIR_RUNTIME}"
+        LLVM_LIB_PATH="${LLVM_LIB_DIR_RUNTIME}"
+)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,undefined -fno-omit-frame-pointer -g")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address,undefined")

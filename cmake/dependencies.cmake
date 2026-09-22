@@ -72,21 +72,55 @@ endif()
 
 message(STATUS "Searching odyplan")
 
+if(NOT OdyPlan_DIR AND DEFINED ENV{OdyPlan_DIR})
+    set(OdyPlan_DIR "$ENV{OdyPlan_DIR}" CACHE PATH "OdyPlan CMake config directory")
+    message(STATUS "Using OdyPlan_DIR from environment: ${OdyPlan_DIR}")
+endif()
+
+if(NOT OdyPlan_DIR AND DEFINED ENV{ODYPLAN_ROOT})
+    set(_odyplan_root "$ENV{ODYPLAN_ROOT}")
+    message(STATUS "Searching for OdyPlan config in: ${_odyplan_root}")
+
+    set(_odyplan_subdirs
+            "lib64/cmake/OdyPlan"
+            "lib/cmake/OdyPlan"
+            "cmake/OdyPlan"
+            "cmake"
+            "lib64/cmake"
+            "lib/cmake"
+    )
+
+    if(WIN32)
+        list(APPEND _odyplan_subdirs
+                "cmake/OdyPlan"
+                "OdyPlan/cmake"
+                "lib/cmake/OdyPlan"
+        )
+    endif()
+
+    foreach(_subdir IN LISTS _odyplan_subdirs)
+        set(_config_path "${_odyplan_root}/${_subdir}/OdyPlanConfig.cmake")
+        if(EXISTS "${_config_path}")
+            set(OdyPlan_DIR "${_odyplan_root}/${_subdir}" CACHE PATH "OdyPlan CMake config directory")
+            message(STATUS "Auto-detected OdyPlan config at: ${OdyPlan_DIR}")
+            break()
+        endif()
+    endforeach()
+endif()
+
+if(NOT OdyPlan_DIR AND ODYPLAN_ROOT)
+    list(APPEND CMAKE_PREFIX_PATH "${ODYPLAN_ROOT}")
+    message(STATUS "Using CMAKE_PREFIX_PATH: ${ODYPLAN_ROOT}")
+endif()
+
 find_package(OdyPlan REQUIRED CONFIG
-        PATHS
-        $ENV{HOME}/dev/OdyPlan/install/lib64/cmake/OdyPlan
-        $ENV{HOME}/dev/OdyPlan/install/lib/cmake/OdyPlan
-
-        ${CMAKE_PREFIX_PATH}/lib64/cmake/OdyPlan
-        ${CMAKE_PREFIX_PATH}/lib/cmake/OdyPlan
-
-        /opt/odyplan/lib64/cmake/OdyPlan
-        /opt/odyplan/lib/cmake/OdyPlan
-        /usr/local/lib64/cmake/OdyPlan
-        /usr/local/lib/cmake/OdyPlan
+        HINTS ${OdyPlan_DIR}
 )
 
 message(STATUS "Found OdyPlan: ${OdyPlan_DIR}")
+if(OdyPlan_VERSION)
+    message(STATUS "OdyPlan Version: ${OdyPlan_VERSION}")
+endif()
 
 set(ODYCOMPILER_SYSTEM_LIBS "")
 
@@ -98,3 +132,13 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND ODYCOMPILER_SYSTEM_LIBS ws2_32)
 endif()
+
+if(TARGET OdyPlan::Odyplan)
+    get_target_property(ODYPLAN_LIB_LOCATION OdyPlan::Odyplan LOCATION)
+    get_filename_component(ODYPLAN_LIB_DIR_RUNTIME "${ODYPLAN_LIB_LOCATION}" DIRECTORY)
+else()
+    get_filename_component(ODYPLAN_LIB_DIR_RUNTIME "${OdyPlan_DIR}" DIRECTORY)
+    get_filename_component(ODYPLAN_LIB_DIR_RUNTIME "${ODYPLAN_LIB_DIR_RUNTIME}" DIRECTORY)
+endif()
+
+message(STATUS "OdyPlan Lib Dir: ${ODYPLAN_LIB_DIR_RUNTIME}")
