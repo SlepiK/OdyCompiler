@@ -64,7 +64,7 @@ jobs:
         
           wget -q \
             --header="Authorization: Bearer ${{ secrets.odycompiler }}" \
-            https://github.com/YOUR-ORG/OdyPlan/releases/download/${{ env.ODYPLAN_VERSION }}/${ASSET_NAME} \
+            https://github.com/SlepiK/OdyPlan/releases/download/${{ env.ODYPLAN_VERSION }}/${ASSET_NAME} \
             -O odyplan.tar.gz
         
           echo "Download complete!"
