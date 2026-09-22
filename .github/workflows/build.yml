@@ -100,7 +100,7 @@ jobs:
 
       - name: Build OdyCompiler
         run: |
-          cmake --build cmake-build-debug --target odycompiler_example_plan -j$(nproc)
+          cmake --build cmake-build-debug --target odycompiler -j$(nproc)
 
       - name: Build Examples
         run: cmake --build build --target odycompiler_example_all
