@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
         compiler1.compileByString(jsonContent);
 
-        std::cout << "✓ Object file created: test_plan.o" << std::endl;
+        std::cout << "Object file created: test_plan.o" << std::endl;
 
         std::cout << '\n';
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
         compiler2.compileByString(jsonContent);
 
-        std::cout << "✓ Executable created: test_plan_runner" << std::endl;
+        std::cout << "Executable created: test_plan_runner" << std::endl;
 
         std::cout << '\n';
 
@@ -75,9 +75,9 @@ int main(int argc, char** argv) {
         std::string nmCmd = "nm test_plan.o | grep -E 'ody_init|ody_main|ody_shutdown'";
         int result = std::system(nmCmd.c_str());
         if (result == 0) {
-            std::cout << "✓ Runtime symbols found in .o file" << std::endl;
+            std::cout << "Runtime symbols found in .o file" << std::endl;
         } else {
-            std::cout << "⚠ Symbols check failed (may need nm installed)" << std::endl;
+            std::cout << "Symbols check failed (may need nm installed)" << std::endl;
         }
 #endif
 
