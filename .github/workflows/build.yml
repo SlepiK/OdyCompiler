@@ -62,28 +62,27 @@ jobs:
           llvm-config-22 --version
           cmake --version  
 
-      - name: Download OdyPlan
-        env:
-          ODYPLAN_TOKEN: ${{ secrets.ODYPLAN }}
-          ODYPLAN_VERSION: ${{ env.ODYPLAN_VERSION }}
+      - name: Copy OdyPlan from Repo
         run: |
-          ASSET_NAME="odyplan-${ODYPLAN_VERSION}-linux-x86_64.tar.gz"
-          echo "Downloading ${ASSET_NAME}..."
-          
-          wget -q \
-            --header="Authorization: Bearer ${ODYPLAN_TOKEN}" \
-            "https://github.com/SlepiK/OdyPlan/releases/download/${ODYPLAN_VERSION}/${ASSET_NAME}" \
-            -O odyplan.tar.gz
-          
-          echo "Download complete!"
-          ls -la odyplan.tar.gz
+          TARBALL="dependencies/odyplan-${{ env.ODYPLAN_VERSION }}-linux-x86_64.tar.gz"
+            
+          echo "Checking for ${TARBALL}..."
+          if [ ! -f "${TARBALL}" ]; then
+            echo "ERROR: ${TARBALL} not found!"
+            echo "Available files in dependencies/:"
+            ls -la dependencies/ 2>/dev/null || echo "Directory does not exist"
+            exit 1
+          fi
+            
+          echo "Found ${TARBALL}"
+          cp "${TARBALL}" odyplan.tar.gz
 
       - name: Extract OdyPlan
         run: |
           mkdir -p ${{ env.ODYPLAN_ROOT }}
           tar -xzf odyplan.tar.gz -C ${{ env.ODYPLAN_ROOT }} --strip-components=1
           rm odyplan.tar.gz
-          
+                
           echo "OdyPlan extracted to ${{ env.ODYPLAN_ROOT }}"
           ls -la ${{ env.ODYPLAN_ROOT }}
 
