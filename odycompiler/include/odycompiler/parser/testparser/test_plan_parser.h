@@ -15,7 +15,7 @@ namespace sierra::odycompiler::parser::testparser {
 
         std::unique_ptr<sierra::odyplan::v3::core::logical::plan::Plan> parse(const std::string &input) override;
 
-        const std::string& getName() const override;
+        [[nodiscard]] const std::string& getName() const override;
 
     private:
         TestOperatorParserRegistry& mRegistry = TestOperatorParserRegistry::instance();

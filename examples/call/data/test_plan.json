@@ -1,0 +1,45 @@
+{
+  "version": "test",
+  "operators": [
+    {
+      "id": "source",
+      "type": 21,
+      "config": {
+        "format": 1,
+        "params": {
+          "path": "read.ndjson"
+        }
+      }
+    },
+    {
+      "id": "sink1",
+      "type": 20,
+      "config": {
+        "print_punctuation": true,
+        "port_field_indices": [0, 1, 2]
+      }
+    },
+    {
+      "id": "sink2",
+      "type": 20,
+      "config": {
+        "print_punctuation": true,
+        "port_field_indices": [0, 1, 2]
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "source",
+      "to": "sink1",
+      "from_port": 0,
+      "to_port": 0
+    },
+    {
+      "from": "source",
+      "to": "sink2",
+      "from_port": 0,
+      "to_port": 0
+    }
+  ]
+}

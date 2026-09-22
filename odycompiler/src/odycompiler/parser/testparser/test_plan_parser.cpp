@@ -2,7 +2,7 @@
 
 namespace sierra::odycompiler::parser::testparser {
     std::unique_ptr<sierra::odyplan::v3::core::logical::plan::Plan> TestPlanParser::parse(const std::string &input) {
-        SPDLOG_INFO("Parsing plan with TestPlanParser");
+        spdlog::info("Parsing plan with TestPlanParser");
 
         nlohmann::json json;
         try {
@@ -21,33 +21,35 @@ namespace sierra::odycompiler::parser::testparser {
             throw std::runtime_error("Input must contain 'operators' array");
         }
 
-        std::unordered_map<odyplan::v3::core::shared::identifiers::OperatorId, odyplan::v3::core::shared::identifiers::OperatorId> operatorIdMap;
+        std::unordered_map<std::string, odyplan::v3::core::shared::identifiers::OperatorId> operatorIdMap;
 
         for (const auto& jsonOperator : json["operators"]) {
-            const odyplan::v3::core::shared::identifiers::OperatorId id = jsonOperator.value("id", -1);
-            const odyplan::v3::core::shared::types::OperatorTypeId type = jsonOperator.value("type", -1);
+            const auto id = jsonOperator.value<std::string>("id", "");
+            const auto type = jsonOperator.value<odyplan::v3::core::shared::types::OperatorTypeId>("type", -1);
 
-            if (id == -1 || type == std::to_underlying(odyplan::v3::core::shared::types::BuiltinOperatorType::UNKNOWN)) {
+            if (id.empty() || type == std::to_underlying(odyplan::v3::core::shared::types::BuiltinOperatorType::UNKNOWN)) {
                 throw std::runtime_error("Operator must have supported 'id' and 'type' fields");
             }
 
-            SPDLOG_DEBUG("Parsing operator: {} (type: {})", id, type);
+            spdlog::debug("Parsing operator: {} (type: {})", id, type);
 
             const auto parser = mRegistry.createParser(type);
             const auto config = jsonOperator.value("config", nlohmann::json::object());
-            auto opr = parser->parse(config);
-
-            operatorIdMap[id] = lPlan.addOperator(std::move(opr));
+            operatorIdMap[id] = parser->parse(lPlan, config);
         }
 
-        SPDLOG_INFO("Parsed {} operators", operatorIdMap.size());
+        spdlog::info("Parsed {} operators", operatorIdMap.size());
 
         if (json.contains("connections")) {
             for (const auto& conn : json["connections"]) {
-                const odyplan::v3::core::shared::identifiers::OperatorId fromId = conn.value("from", -1);
-                const odyplan::v3::core::shared::identifiers::OperatorId toId = conn.value("to", -1);
+                const auto fromId = conn.value<std::string>("from", "");
+                const auto toId = conn.value<std::string>("to", "");
                 const odyplan::v3::core::shared::identifiers::PortId fromPort = conn.value("from_port", -1);
                 const odyplan::v3::core::shared::identifiers::PortId toPort = conn.value("to_port", -1);
+
+                if (fromId.empty() || toId.empty()) {
+                    throw std::runtime_error("Connection must have supported 'from' and 'to'");
+                }
 
                 if (!operatorIdMap.contains(fromId) || !operatorIdMap.contains(toId)) {
                     throw std::runtime_error("Unknown operator in connection");
@@ -65,7 +67,7 @@ namespace sierra::odycompiler::parser::testparser {
                 );
             }
 
-            SPDLOG_INFO("Parsed {} connections", json["connections"].size());
+            spdlog::info("Parsed {} connections", json["connections"].size());
         }
 
         return std::make_unique<sierra::odyplan::v3::core::logical::plan::Plan>(std::move(lPlan));

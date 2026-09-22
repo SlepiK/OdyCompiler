@@ -11,7 +11,7 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::print {
     public:
         static constexpr auto TYPE = odyplan::v3::core::shared::types::BuiltinOperatorType::PRINT;
 
-        std::unique_ptr<odyplan::v3::core::logical::operators::IOperator> parse(const nlohmann::json &config) override;
+        odyplan::v3::core::shared::identifiers::OperatorId parse(odyplan::v3::core::logical::plan::Plan& lPlan, const nlohmann::json &config) override;
 
         [[nodiscard]] odyplan::v3::core::shared::types::OperatorTypeId getOperatorType() const override;
     };

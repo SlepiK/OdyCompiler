@@ -7,9 +7,9 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::write {
         return std::to_underlying(TYPE);
     }
 
-    std::unique_ptr<odyplan::v3::core::logical::operators::IOperator> WriteOperatorParser::parse(const nlohmann::json &config) {
+    odyplan::v3::core::shared::identifiers::OperatorId WriteOperatorParser::parse(odyplan::v3::core::logical::plan::Plan& lPlan, const nlohmann::json &config) {
         try {
-            SPDLOG_DEBUG("Parsing WriteOperator");
+            spdlog::debug("Parsing WriteOperator");
 
             if (!config.contains("params")) {
                 throw std::runtime_error("config must contain 'params' field");
@@ -25,9 +25,9 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::write {
 
             const auto ioConfig = config.value("params", nlohmann::json::object());
 
-            SPDLOG_INFO("Creating with format={}, path={}", formatId, params.value("path", "unknown"));
+            spdlog::info("Creating with format={}, path={}", formatId, params.value("path", "unknown"));
 
-            return std::make_unique<odyplan::v3::basic::operators::sink::write::logical::WriteOperator>(ioFormat,ioConfig);
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::write::logical::WriteOperator>(ioFormat,ioConfig));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse WriteOperator: {}", e.what()));
         }

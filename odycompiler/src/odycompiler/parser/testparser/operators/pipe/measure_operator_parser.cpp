@@ -7,23 +7,23 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::measure {
         return std::to_underlying(TYPE);
     }
 
-    std::unique_ptr<odyplan::v3::core::logical::operators::IOperator> MeasureOperatorParser::parse(const nlohmann::json &config) {
+    odyplan::v3::core::shared::identifiers::OperatorId MeasureOperatorParser::parse(odyplan::v3::core::logical::plan::Plan& lPlan, const nlohmann::json &config) {
         try {
-            SPDLOG_DEBUG("Parsing MeasureOperator");
+            spdlog::debug("Parsing MeasureOperator");
 
             if (!config.contains("label")) {
                 throw std::runtime_error("config must contain 'label' field");
             }
 
-            const std::string label = config.value("label", "");
+            std::string label = config.value("label", "");
 
             if (label.empty()) {
                 throw std::runtime_error("MeasureOperator label cannot be empty");
             }
 
-            SPDLOG_INFO("Creating MeasureOperator with label={}", label);
+            spdlog::info("Creating MeasureOperator with label={}", label);
 
-            return std::make_unique<odyplan::v3::basic::operators::pipe::measure::logical::MeasureOperator>(std::move(label));
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::measure::logical::MeasureOperator>(std::move(label)));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse MeasureOperator: {}", e.what()));
         }
