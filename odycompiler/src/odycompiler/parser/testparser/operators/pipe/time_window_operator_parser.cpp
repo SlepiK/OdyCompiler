@@ -24,7 +24,7 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::window {
             timeConfig.slide = config.value<std::uint64_t>("slide", 1);
             timeConfig.advance = config.value<std::uint64_t>("advance", 1);
 
-            spdlog::info("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeConfig.size, timeConfig.slide, timeConfig.advance);
+            spdlog::info(fmt::format("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeConfig.size, timeConfig.slide, timeConfig.advance));
 
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::TimeWindowOperator>(timeConfig));
         } catch (const std::exception &e) {

@@ -62,7 +62,6 @@ jobs:
           llvm-config-22 --version
           cmake --version  
           echo "LLVM_DIR: ${LLVM_DIR}"
-          ls -la ${LLVM_DIR}
 
       - name: Copy OdyPlan from Repo
         run: |
