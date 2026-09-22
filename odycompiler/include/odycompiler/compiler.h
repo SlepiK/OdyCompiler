@@ -83,6 +83,7 @@ namespace sierra::odycompiler {
         void loadBuiltinParsers();
 
         void generateMainWrapper(std::unique_ptr<llvm::Module>& module, std::unique_ptr<llvm::LLVMContext>& ctx);
+
     };
 }
 

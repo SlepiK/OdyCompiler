@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <odycompiler/compiler.h>
+#include <odycompiler/timer.h>
 
 void printUsage(const char* prg) {
     spdlog::info(fmt::format("Usage {} [OPTIONS] <input>", prg));
@@ -222,6 +223,8 @@ int main(int argc, char* argv[]) {
         config.odyPlanLib = cmdArgs.odyPlanLib;
         config.llvmLib = cmdArgs.llvmLib;
 
+        sierra::odycompiler::Timer compilerTimer{};
+        compilerTimer.start();
         sierra::odycompiler::Compiler compiler(config);
 
         spdlog::info("=== OdyCompiler ===");
@@ -231,6 +234,7 @@ int main(int argc, char* argv[]) {
         } else if (config.inputString.has_value()) {
             compiler.compileByString(config.inputString.value());
         }
+        compilerTimer.stop();
 
         return 0;
     } catch (const std::exception& e) {
