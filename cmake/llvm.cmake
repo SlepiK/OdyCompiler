@@ -17,7 +17,7 @@ else()
     message(STATUS "Found LLVM ${LLVM_VERSION} (system): ${LLVM_DIR}")
 endif()
 
-message(STATUS "FOUND Clang ${Clang_VERSION}: ${Clang_DIR}")
+message(STATUS "Found Clang ${Clang_VERSION}: ${Clang_DIR}")
 
 if(LLVM_LIBRARY_DIRS)
     list(GET LLVM_LIBRARY_DIRS 0 LLVM_LIB_DIR_RUNTIME)
