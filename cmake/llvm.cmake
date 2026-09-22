@@ -17,9 +17,15 @@ else()
     message(STATUS "Found LLVM ${LLVM_VERSION} (system): ${LLVM_DIR}")
 endif()
 
-message(STATUS "FOUND LLVM ${LLVM_VERSION}: ${LLVM_DIR}")
-message(STATUS "FOUND Clang ${Clang_VERSION}: ${Clang_DIR}")
+message(STATUS "Found Clang ${Clang_VERSION}: ${Clang_DIR}")
 
+if(LLVM_LIBRARY_DIRS)
+    list(GET LLVM_LIBRARY_DIRS 0 LLVM_LIB_DIR_RUNTIME)
+else()
+    get_filename_component(LLVM_LIB_DIR_RUNTIME "${LLVM_DIR}" DIRECTORY)
+endif()
+
+message(STATUS "OdyPlan Lib Dir: ${ODYPLAN_LIB_DIR_RUNTIME}")
 # JIT
 
 llvm_map_components_to_libnames(LLVM_LIBS
@@ -35,7 +41,8 @@ llvm_map_components_to_libnames(LLVM_LIBS
 
 set(ODYPLAN_AOT_SUPPORTED_TARGETS
         X86
-        # AArch64
+        AArch64
+        RISCV
 )
 
 llvm_map_components_to_libnames(LLVM_AOT_LIBS
@@ -45,6 +52,10 @@ llvm_map_components_to_libnames(LLVM_AOT_LIBS
         asmprinter
         asmparser
         orcjit
+        AllTargetsCodeGens
+        AllTargetsAsmParsers
+        AllTargetsDescs
+        AllTargetsInfos
         ${ODYPLAN_AOT_SUPPORTED_TARGETS}
 )
 
