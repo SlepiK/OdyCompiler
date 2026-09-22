@@ -2,7 +2,7 @@
 
 namespace sierra::odycompiler::parser::testparser {
     void TestOperatorParserRegistry::initializeParsers() {
-        SPDLOG_INFO("Initializing TestOperatorParserRegistry");
+        spdlog::debug("Initializing TestOperatorParserRegistry");
 
         registerParser(std::to_underlying(operators::source::read::ReadOperatorParser::TYPE),[]() {
             return std::make_unique<operators::source::read::ReadOperatorParser>();
@@ -48,11 +48,11 @@ namespace sierra::odycompiler::parser::testparser {
             return std::make_unique<operators::pipe::un::UnionOperatorParser>();
         });
 
-        SPDLOG_INFO("TestOperatorParserRegistry initialized with {} operator parsers", getTypesV().size());
+        spdlog::debug("TestOperatorParserRegistry initialized with {} operator parsers", getTypesV().size());
 
-        SPDLOG_INFO("Registered operator types:");
+        spdlog::debug("Registered operator types:");
         for (const auto& type : getTypesV()) {
-            SPDLOG_INFO("  -> {}", type);
+            spdlog::debug("  -> {}", type);
         }
     }
 }
