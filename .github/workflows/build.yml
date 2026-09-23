@@ -39,7 +39,8 @@ jobs:
             libfmt-dev \
             libffi-dev \
             libedit-dev \
-            libcurl4-openssl-dev
+            libcurl4-openssl-dev \
+            libcli11-dev
 
       - name: Remove system LLVM/Clang
         run: |

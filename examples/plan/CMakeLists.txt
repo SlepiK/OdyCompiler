@@ -67,9 +67,9 @@ function(add_ody_test NAME)
 
     set(COMPILE_ARGS_LIST
             ${_args_list}
-            -op "${_exec_name}"
-            -opl "${ODYPLAN_LIB_DIR_RUNTIME}"
-            -lvl "${LLVM_LIB_DIR_RUNTIME}"
+            -o "${_exec_name}"
+            --odyplan_lib "${ODYPLAN_LIB_DIR_RUNTIME}"
+            --llvm_lib "${LLVM_LIB_DIR_RUNTIME}"
     )
 
     separate_arguments(EXEC_ARGS_LIST UNIX_COMMAND "${ARG_EXEC_ARGS}")

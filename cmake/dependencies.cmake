@@ -43,6 +43,26 @@ else()
     endif()
 endif()
 
+message(STATUS "Searching cli11")
+
+if(ODYPLAN_USE_SYSTEM_DEPS)
+    find_package(CLI11 REQUIRED)
+    message(STATUS "Found system CLI11: ${CLI11_DIR}")
+else()
+    find_package(CLI11 QUIET)
+    if(NOT CLI11_FOUND)
+        include(FetchContent)
+        FetchContent_Declare(
+                CLI11
+                GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+                GIT_TAG v2.5.0
+                SYSTEM
+        )
+        FetchContent_MakeAvailable(CLI11)
+        message(STATUS "Fetched CLI11: ${CLI11_SOURCE_DIR}")
+    endif()
+endif()
+
 if(NOT ODYPLAN_USE_SYSTEM_DEPS)
     if(TARGET spdlog::spdlog)
         include_directories(${spdlog_SOURCE_DIR}/include)
@@ -52,6 +72,11 @@ if(NOT ODYPLAN_USE_SYSTEM_DEPS)
     if(TARGET nlohmann_json::nlohmann_json)
         include_directories(${nlohmann_json_SOURCE_DIR}/include)
         message(STATUS "Added nlohmann_json include: ${nlohmann_json_SOURCE_DIR}/include")
+    endif()
+
+    if(TARGET CLI11::CLI11)
+        include_directories(${CLI11_SOURCE_DIR}/include)
+        message(STATUS "Added CLI11 include: ${CLI11_SOURCE_DIR}/include")
     endif()
 endif()
 
