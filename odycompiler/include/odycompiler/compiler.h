@@ -43,6 +43,8 @@ namespace sierra::odycompiler {
             bool lnkExecutable = false;
             std::string linkerPath;
             bool dryrun = false;
+            bool verbose = false;
+            bool timer = false;
 
             std::string parser;
 

@@ -4,39 +4,15 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <odycompiler/compiler.h>
 #include <odycompiler/timer.h>
+#include <CLI/CLI.hpp>
 
-void printUsage(const char* prg) {
-    spdlog::info(fmt::format("Usage {} [OPTIONS] <input>", prg));
-    spdlog::info("Input (choose on):");
-    spdlog::info(" -f/--file <file>");
-    spdlog::info(" -s/--string <string>");
-    spdlog::info("Output:");
-    spdlog::info(" -op/--output <path>");
-    spdlog::info(" -l/--link");
-    spdlog::info("Parser:");
-    spdlog::info(" -p/--parser <name>   Parser type: test, ody (default: test)");
-    spdlog::info("Target:");
-    spdlog::info(" -t/--target <triple> Target triple (default: system default)");
-    spdlog::info("Optimization:");
-    spdlog::info(" -o/--optimize <level>    Optimization level 0-3 (default: 3)");
-    spdlog::info("Libraries:");
-    spdlog::info(" -opl/--odyplan_lib <path>    Path to lib-folder of OdyPlan");
-    spdlog::info(" -lvl/--llvm_lib <path>    Path to lib-folder of llvm");
-    spdlog::info("Other:");
-    spdlog::info(" -v/--verbose Verbose output");
-    spdlog::info(" -h/--help    Show this help message");
-    spdlog::info(" --version    Show version information");
-    spdlog::info(" --dry    Executes a dry-run");
-    spdlog::info("Examples:");
-    spdlog::info(fmt::format(" {} plan.test.json    Creates plan.o (object file)", prg));
-    spdlog::info(fmt::format(" {} plan.test.json -l    Creates plan executable (links automatically)", prg));
-    spdlog::info(fmt::format(" {} plan.test.json -l -o my_plan    Creates my_plan executable", prg));
-    spdlog::info(fmt::format(" {} plan.test.json -l --linker=/usr/bin/ld    Uses custom linker", prg));
-}
+#ifndef ODYCOMPILER_VERSION
+    #define ODYCOMPILER_VERSION "unknown"
+#endif
 
 void printVersion() {
     spdlog::info("OdyCompiler");
-    spdlog::info(fmt::format(" Version: {}", "v0.1.0"));
+    spdlog::info(fmt::format(" Version: {}", ODYCOMPILER_VERSION));
     spdlog::info(fmt::format(" Git: {}", "https://github.com/SlepiK/OdyCompiler"));
     spdlog::info(fmt::format(" LLVM: {}", LLVM_VERSION_STRING));
     spdlog::info(fmt::format(" Target: {}", llvm::sys::getDefaultTargetTriple()));
@@ -58,173 +34,83 @@ struct CommandArgs {
     std::string llvmLib;
 };
 
-CommandArgs parseCommandArguments(const int argc, char** argv) {
-    CommandArgs cmdArgs;
+sierra::odycompiler::Compiler::Config parseCommandArguments(const int argc, char** argv) {
+    sierra::odycompiler::Compiler::Config compilerConfig;
+
+    CLI::App compilerApp{"OdyCompiler - Compile query plans via OdyPlan to native binaries"};
+
+    compilerApp.set_help_flag("-h,--help", "Show this help message");
+    compilerApp.add_flag_callback("--version", []() {
+            printVersion();
+            throw CLI::Success();
+        }, "Show version information")->trigger_on_parse();
+
+    compilerApp.get_formatter()->column_width(30);
+
+    auto inputGroup = compilerApp.add_option_group("input", "Input source of query plan (choose one)");
+    inputGroup->add_option("-f,--file", compilerConfig.inputPath, "Input file path");
+    inputGroup->add_option("-s,--string",compilerConfig.inputString, "Input string");
+    inputGroup->require_option(1);
+
+    compilerApp.add_option("-o,--output", compilerConfig.outputPath, "Output path with filename")->default_val("compiled_plan");
+
+    compilerApp.add_flag("-l,--link", compilerConfig.lnkExecutable, "Automatic link to executable");
+
+    compilerApp.add_option("-p,--parser", compilerConfig.parser, "Parser type (TestPlanParser, OdyPlanParser and maybe more...)")->default_val("TestPlanParser");
+
+    compilerApp.add_option("-t,--target", compilerConfig.targetTriple, "Target triple (default: system default)");
+
+    compilerApp.add_option("-O,--optimize", compilerConfig.optimizationLevel, "Optimization level (0-3)")->default_val(3)->check(CLI::Range(0, 3));
+
+    compilerApp.add_option("--odyplan_lib", compilerConfig.odyPlanLib, "Path to OdyPlan lib folder");
+    compilerApp.add_option("--llvm_lib", compilerConfig.llvmLib, "Path to LLVM library file");
+
+    compilerApp.add_flag("-v,--verbose", compilerConfig.verbose, "Verbose output");
+    compilerApp.add_flag("--dry", compilerConfig.dryrun, "Execute a dry-run");
+    compilerApp.add_flag("--timer", compilerConfig.timer, "Measure time consumption during compilation");
 
     if (argc == 1) {
-        throw std::runtime_error("No parameter specified! Use -h/--help for help!");
+        std::cout << compilerApp.help() << std::endl;
+        exit(0);
     }
 
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
-
-        if (arg == "-h" || arg == "--help") {
-            cmdArgs.help = true;
-            return cmdArgs;
-        }
-
-        if (arg == "-v" || arg == "--version") {
-            cmdArgs.version = true;
-            return cmdArgs;
-        }
-
-        if (arg == "-op" || arg == "--output") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for output");
-            }
-            cmdArgs.outputPath = argv[++i];
-            continue;
-        }
-
-        if (arg == "-opl" || arg == "--odyplan_lib") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for odyplan_lib");
-            }
-            cmdArgs.odyPlanLib = argv[++i];
-            continue;
-        }
-
-        if (arg == "-lvl" || arg == "--llvm_lib") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for llvm_lib");
-            }
-            cmdArgs.llvmLib = argv[++i];
-            continue;
-        }
-
-        if (arg == "-s" || arg == "--string") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for string based input");
-            }
-            cmdArgs.inputString = argv[++i];
-            continue;
-        }
-
-        if (arg == "-f" || arg == "--file") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for file based input");
-            }
-            cmdArgs.inputPath = argv[++i];
-            continue;
-        }
-
-        if (arg == "-p" || arg == "--parser") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for parser");
-            }
-            cmdArgs.parser = argv[++i];
-            continue;
-        }
-
-        if (arg == "-t" || arg == "--target") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for target");
-            }
-            cmdArgs.targetTriple = argv[++i];
-            continue;
-        }
-
-        if (arg == "-o" || arg == "--optimize") {
-            if (i + 1 >= argc) {
-                throw std::runtime_error("Missing argument for optimize");
-            }
-            const int level = std::stoi(argv[++i]);
-            if (level < 0 || level > 3) {
-                throw std::runtime_error("Optimization level must be 0-3");
-            }
-            cmdArgs.optimizationLevel = static_cast<std::uint8_t>(level);
-            continue;
-        }
-
-        if (arg == "-l" || arg == "--link") {
-            cmdArgs.linkExecutable = true;
-            continue;
-        }
-
-        if (arg == "--verbose") {
-            cmdArgs.verbose = true;
-            continue;
-        }
-
-        if (arg == "--dry") {
-            cmdArgs.dryrun = true;
-            continue;
-        }
-
-        throw std::runtime_error(fmt::format("Unknown option: {}", arg));
+    try {
+        compilerApp.parse(argc, argv);
+    } catch (const CLI::CallForHelp& e) {
+        exit(compilerApp.exit(e));
+    } catch (const CLI::CallForVersion& e) {
+        exit(compilerApp.exit(e));
+    } catch (const CLI::Success& e) {
+        exit(compilerApp.exit(e));
+    } catch (const CLI::ParseError& e) {
+        throw std::runtime_error(fmt::format("Could not parse given parameters. Use [-h,--help] for help about usage"));
     }
 
-    if (!cmdArgs.inputPath.has_value() && !cmdArgs.inputString.has_value()) {
-        throw std::runtime_error("No input specified. Use -f/--file or -s/--string");
+    if (compilerConfig.inputPath.has_value()) {
+        if (!std::filesystem::exists(compilerConfig.inputPath.value())) {
+            throw std::runtime_error(fmt::format("Input file for query plan does not exist: {}", compilerConfig.inputPath.value()));
+        }
     }
 
-    if (cmdArgs.inputPath.has_value() && cmdArgs.inputString.has_value()) {
-        throw std::runtime_error("Cannot specify input file and input string together");
-    }
-
-    return cmdArgs;
+    return compilerConfig;
 }
 
-int main(int argc, char* argv[]) {
-    auto logger = spdlog::stdout_color_mt("OdyCompiler");
-    logger->set_level(spdlog::level::info);
+int main(const int argc, char* argv[]) {
+    spdlog::stdout_color_mt("OdyCompiler");
+    spdlog::set_level(spdlog::level::info);
     try {
-        CommandArgs cmdArgs;
-        try {
-            cmdArgs = parseCommandArguments(argc, argv);
-        } catch (const std::exception& e) {
-            spdlog::error(fmt::format("Error: {}", e.what()));
-            //printUsage(argv[0]);
-            return 1;
-        }
+        const auto config = parseCommandArguments(argc, argv);
 
-        if (cmdArgs.help) {
-            printUsage(argv[0]);
-            return 0;
-        }
-
-        if (cmdArgs.version) {
-            printVersion();
-            return 0;
-        }
-
-        if (cmdArgs.verbose) {
-            logger->set_level(spdlog::level::debug);
+        if (config.verbose) {
+            spdlog::set_level(spdlog::level::debug);
             spdlog::debug("Debug mode enabled");
         }
 
-        if (cmdArgs.inputPath.has_value()) {
-            if (!std::filesystem::exists(cmdArgs.inputPath.value())) {
-                spdlog::error(fmt::format("Input file does not exist: {}", cmdArgs.inputPath.value()));
-                return 1;
-            }
+        sierra::odycompiler::Timer compilerTimer{};
+        if (config.timer) {
+            compilerTimer.start();
         }
 
-
-        sierra::odycompiler::Compiler::Config config;
-        config.outputPath = cmdArgs.outputPath;
-        config.targetTriple = cmdArgs.targetTriple;
-        config.inputPath = cmdArgs.inputPath;
-        config.inputString = cmdArgs.inputString;
-        config.optimizationLevel = cmdArgs.optimizationLevel;
-        config.lnkExecutable = cmdArgs.linkExecutable;
-        config.parser = cmdArgs.parser;
-        config.dryrun = cmdArgs.dryrun;
-        config.odyPlanLib = cmdArgs.odyPlanLib;
-        config.llvmLib = cmdArgs.llvmLib;
-
-        sierra::odycompiler::Timer compilerTimer{};
-        compilerTimer.start();
         sierra::odycompiler::Compiler compiler(config);
 
         spdlog::info("=== OdyCompiler ===");
@@ -234,7 +120,10 @@ int main(int argc, char* argv[]) {
         } else if (config.inputString.has_value()) {
             compiler.compileByString(config.inputString.value());
         }
-        compilerTimer.stop();
+
+        if (config.timer) {
+            compilerTimer.stop();
+        }
 
         return 0;
     } catch (const std::exception& e) {

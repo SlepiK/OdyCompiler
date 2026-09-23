@@ -32,8 +32,10 @@ target_link_libraries(${LIB_NAME} PUBLIC
         odyplan::core
         odyplan::basic
 
+        PRIVATE
         spdlog::spdlog
         nlohmann_json::nlohmann_json
+        CLI11::CLI11
 
         ${ODYCOMPILER_SYSTEM_LIBS}
 )
@@ -46,6 +48,13 @@ add_executable(${EXE_NAME}
 
 target_link_libraries(${EXE_NAME} PRIVATE
         ${LIB_NAME}
+)
+
+target_compile_definitions(${EXE_NAME} PRIVATE
+        ODYCOMPILER_VERSION="${PROJECT_VERSION}"
+        ODYCOMPILER_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+        ODYCOMPILER_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+        ODYCOMPILER_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
 if(ENABLE_TOOLING)
