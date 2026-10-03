@@ -33,7 +33,7 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::print {
             if (hasIndices) {
                 const auto indices = config.value("port_field_indices", odyplan::v3::basic::operators::sink::print::logical::PrintOperator::PortFieldIndexV{});
 
-                spdlog::info("Creating with {} field indices", indices.size());
+                spdlog::info("Creating PrintOperator with {} field indices", indices.size());
                 spdlog::debug("Indices: {}", nlohmann::json(indices).dump());
                 return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(tPrintConfig,indices));
 
@@ -42,13 +42,13 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::print {
             if (hasNames) {
                 const auto names = config.value("port_field_names", odyplan::v3::basic::operators::sink::print::logical::PrintOperator::PortFieldNameV{});
 
-                spdlog::info("Creating with {} field names", names.size());
+                spdlog::info("Creating PrintOperator with {} field names", names.size());
                 spdlog::debug("Names: {}", nlohmann::json(names).dump());
 
                 return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(tPrintConfig,names));
             }
 
-            spdlog::info("Creating with all fields");
+            spdlog::info("Creating PrintOperator with all fields");
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(tPrintConfig));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse PrintOperator: {}", e.what()));

@@ -20,22 +20,22 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::join {
                 throw std::runtime_error("SelectOperator config must contain 'predicate' field");
             }
 
-            const auto joinConfig = config.value("config", nlohmann::json::object());
+            const auto joinOptions = config.value("config", nlohmann::json::object());
 
-            odyplan::v3::basic::operators::pipe::join::logical::details::JoinConfig tJoinConfig;
+            odyplan::v3::basic::operators::pipe::join::details::JoinOperatorOptions tJoinOptions;
 
-            tJoinConfig.allowedLateness = config.value<std::int64_t>("size", 1);
-            tJoinConfig.card = config.value<odyplan::v3::basic::operators::pipe::join::logical::details::JoinCard>("card", odyplan::v3::basic::operators::pipe::join::logical::details::JoinCard::MANY_MANY);
+            tJoinOptions.allowedLateness = config.value<std::int64_t>("size", 1);
+            tJoinOptions.card = config.value<odyplan::v3::basic::operators::pipe::join::details::JoinOperatorCard>("card", odyplan::v3::basic::operators::pipe::join::details::JoinOperatorCard::MANY_MANY);
 
-            spdlog::info("Parsing expression");
+            spdlog::debug("Parsing expression");
 
             const auto& predicateJson = config["predicate"];
 
             auto predicate = expression::ExpressionParser::parseExpression(predicateJson);
 
-            spdlog::info("Creating JoinOperator with allowedLateness={}, card={}", tJoinConfig.allowedLateness, std::to_underlying(tJoinConfig.card));
+            spdlog::info("Creating JoinOperator with allowedLateness={}, card={}", tJoinOptions.allowedLateness, std::to_underlying(tJoinOptions.card));
 
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::join::logical::JoinOperator>(tJoinConfig, std::move(predicate)));
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::join::logical::JoinOperator>(tJoinOptions, std::move(predicate)));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse JoinOperator: {}", e.what()));
         }

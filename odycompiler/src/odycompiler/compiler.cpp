@@ -4,7 +4,7 @@
 #include <odycompiler/parser/testparser/test_plan_parser.h>
 
 namespace sierra::odycompiler {
-    Compiler::Compiler(Config config) : mConfig(std::move(config)), mCodegenTypeRegistry(odyplan::v3::core::physical::types::CodegenTypeRegistry::withBuiltins()){
+    Compiler::Compiler(Config config) : mConfig(std::move(config)){
         loadBuiltinParsers();
     }
 
@@ -106,7 +106,7 @@ namespace sierra::odycompiler {
     std::unique_ptr<odyplan::v3::core::physical::plan::Plan> Compiler::buildPhysicalPan(std::unique_ptr<odyplan::v3::core::logical::plan::Plan> lPlan, std::unique_ptr<llvm::LLVMContext>& ctx) {
         spdlog::info("Building physical plan...");
 
-        odyplan::v3::core::builder::PlanBuilder builder(mCodegenTypeRegistry);
+        odyplan::v3::core::builder::PlanBuilder builder{};
 
         odyplan::v3::basic::operators::loadBuiltinOperatorTransformations(builder);
 
@@ -146,17 +146,10 @@ namespace sierra::odycompiler {
         auto* entryBB = llvm::BasicBlock::Create(*ctx, "entry", mainFn);
         llvm::IRBuilder<> builder(entryBB);
 
-        const auto createFn = module->getOrInsertFunction("odyCreateRtTypeRegistryExt", llvm::FunctionType::get(ptrTy, {}, false));
-        auto* registryPtr = builder.CreateCall(createFn);
-
         auto* initFn = module->getFunction("ody_init");
 
         if (initFn != nullptr) {
-            if (registryPtr != nullptr) {
-                builder.CreateCall(initFn, {registryPtr});
-            } else {
-                throw std::runtime_error("Could not create call to ody_init()");
-            }
+                builder.CreateCall(initFn);
         } else {
             throw std::runtime_error("ody_init() not found in module");
         }

@@ -18,15 +18,15 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::window {
 
             const auto timeWindowConfig = config.value("config", nlohmann::json::object());
 
-            odyplan::v3::basic::window::time::TimeWindowConfig timeConfig;
+            odyplan::v3::basic::operators::pipe::window::details::TimeWindowOptions timeOptions;
 
-            timeConfig.size = config.value<std::uint64_t>("size", 1);
-            timeConfig.slide = config.value<std::uint64_t>("slide", 1);
-            timeConfig.advance = config.value<std::uint64_t>("advance", 1);
+            timeOptions.size = config.value<std::uint64_t>("size", 1);
+            timeOptions.slide = config.value<std::uint64_t>("slide", 1);
+            timeOptions.advance = config.value<std::uint64_t>("advance", 1);
 
-            spdlog::info("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeConfig.size, timeConfig.slide.value(), timeConfig.advance.value());
+            spdlog::info("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeOptions.size, timeOptions.slide.value(), timeOptions.advance.value());
 
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::TimeWindowOperator>(timeConfig));
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::TimeWindowOperator>(timeOptions));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse TimeWindowOperator: {}", e.what()));
         }

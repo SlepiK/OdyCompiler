@@ -25,7 +25,7 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::project {
             if (hasMapping) {
                 const auto mapping = config.value("mapping", odyplan::v3::basic::operators::pipe::project::logical::ProjectOperator::IndexMapping{});
 
-                spdlog::info("Creating with {} field indices", mapping.size());
+                spdlog::info("Creating ProjectOperator with {} field indices", mapping.size());
                 spdlog::debug("Mapping: {}", nlohmann::json(mapping).dump());
 
                 return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::project::logical::ProjectOperator>(mapping));
@@ -34,7 +34,7 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::project {
             if (hasNameMapping) {
                 const auto nameMapping = config.value("name_mapping", odyplan::v3::basic::operators::pipe::project::logical::ProjectOperator::NameMapping{});
 
-                spdlog::info("Creating with {} field names", nameMapping.size());
+                spdlog::info("Creating ProjectOperator with {} field names", nameMapping.size());
                 spdlog::debug("Name mapping: {}", nlohmann::json(nameMapping).dump());
 
                 return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::project::logical::ProjectOperator>(nameMapping));

@@ -17,11 +17,11 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::select {
 
             const auto& predicateJson = config["predicate"];
 
-            spdlog::info("Parsing expression");
+            spdlog::debug("Parsing expression");
 
             auto predicate = expression::ExpressionParser::parseExpression(predicateJson);
 
-            spdlog::debug("Creating SelectOperator");
+            spdlog::info("Creating SelectOperator");
 
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::select::logical::SelectOperator>(std::move(predicate)));
         } catch (const std::exception &e) {

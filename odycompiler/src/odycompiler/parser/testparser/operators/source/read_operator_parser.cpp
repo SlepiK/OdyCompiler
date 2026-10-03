@@ -39,7 +39,7 @@ namespace sierra::odycompiler::parser::testparser::operators::source::read {
             options.allowedLateness = std::chrono::milliseconds(config.value("allowedLateness", 0));
             options.useProgramClock = config.value("useProgramClock", false);
 
-            spdlog::info("Creating with format={}, path={}", formatId, params.value("path", "unknown"));
+            spdlog::info("Creating ReadOperator with format={}, path={}", formatId, params.value("path", "unknown"));
 
             return lPlan.addOperator(odyplan::v3::basic::operators::source::read::logical::ReadOperator::fromAutoSchema(
                 ioFormat,

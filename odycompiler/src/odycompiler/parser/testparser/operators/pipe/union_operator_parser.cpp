@@ -11,9 +11,9 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::un {
         try {
             spdlog::debug("Parsing UnionOperator");
 
-            spdlog::debug("Creating UnionOperator");
+            spdlog::info("Creating UnionOperator");
 
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::merge::logical::MergeOperator>());
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::union_::logical::UnionOperator>());
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse UnionOperator: {}", e.what()));
         }

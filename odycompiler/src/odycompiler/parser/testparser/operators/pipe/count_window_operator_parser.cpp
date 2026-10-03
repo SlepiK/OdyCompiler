@@ -17,15 +17,15 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::window {
 
             const auto countWindowConfig = config.value("config", nlohmann::json::object());
 
-            odyplan::v3::basic::window::count::CountWindowConfig countConfig;
+            odyplan::v3::basic::operators::pipe::window::details::CountWindowOptions countOptions;
 
-            countConfig.size = config.value<std::uint64_t>("size", 1);
-            countConfig.slide = config.value<std::uint64_t>("slide", 1);
-            countConfig.advance = config.value<std::uint64_t>("advance", 1);
+            countOptions.size = config.value<std::uint64_t>("size", 1);
+            countOptions.slide = config.value<std::uint64_t>("slide", 1);
+            countOptions.advance = config.value<std::uint64_t>("advance", 1);
 
-            spdlog::info("Creating CountWindowOperator with size={}, slide={}, advance={}", countConfig.size, countConfig.slide, countConfig.advance);
+            spdlog::info("Creating CountWindowOperator with size={}, slide={}, advance={}", countOptions.size, countOptions.slide, countOptions.advance);
 
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::CountWindowOperator>(countConfig));
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::CountWindowOperator>(countOptions));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse CountWindowOperator: {}", e.what()));
         }

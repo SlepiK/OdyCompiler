@@ -25,7 +25,7 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::write {
 
             const auto ioConfig = config.value("params", nlohmann::json::object());
 
-            spdlog::info("Creating with format={}, path={}", formatId, params.value("path", "unknown"));
+            spdlog::info("Creating WriteOperator with format={}, path={}", formatId, params.value("path", "unknown"));
 
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::write::logical::WriteOperator>(ioFormat,ioConfig));
         } catch (const std::exception &e) {
