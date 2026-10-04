@@ -64,8 +64,6 @@ namespace sierra::odycompiler {
         Config mConfig;
         std::unordered_map<std::string, std::unique_ptr<parser::IPlanParser>> mParsers;
 
-        odyplan::v3::core::physical::types::CodegenTypeRegistry mCodegenTypeRegistry;
-
         std::unique_ptr<odyplan::v3::core::logical::plan::Plan> buildLogicalPlan(const std::string& input);
 
         std::unique_ptr<odyplan::v3::core::physical::plan::Plan> buildPhysicalPan(std::unique_ptr<odyplan::v3::core::logical::plan::Plan> lPlan, std::unique_ptr<llvm::LLVMContext>& ctx);
