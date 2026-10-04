@@ -15,7 +15,9 @@
       "id": "sink1",
       "type": 20,
       "config": {
-        "print_punctuation": true,
+        "options": {
+          "print_punctuation": false
+        },
         "port_field_indices": [0, 1, 2]
       }
     },
@@ -23,7 +25,9 @@
       "id": "sink2",
       "type": 20,
       "config": {
-        "print_punctuation": true,
+        "options": {
+          "print_punctuation": false
+        },
         "port_field_indices": [0, 1, 2]
       }
     }

@@ -1,0 +1,67 @@
+{
+  "version": "test",
+  "operators": [
+    {
+      "id": "source1",
+      "type": 21,
+      "config": {
+        "format": 1,
+        "params": {
+          "path": "nexmark.person.10k.ndjson"
+        },
+        "options": {
+          "startTimestampPosition": "timestamp"
+        }
+      }
+    },
+    {
+      "id": "source2",
+      "type": 21,
+      "config": {
+        "format": 1,
+        "params": {
+          "path": "nexmark.person.10k.ndjson"
+        },
+        "options": {
+          "startTimestampPosition": "timestamp"
+        }
+      }
+    },
+    {
+      "id": "union",
+      "type": 12,
+      "config": {
+        "assureOrder": true
+      }
+    },
+    {
+      "id": "sink",
+      "type": 20,
+      "config": {
+        "options": {
+          "print_punctuation": false
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "source1",
+      "to": "union",
+      "from_port": 0,
+      "to_port": 0
+    },
+    {
+      "from": "source2",
+      "to": "union",
+      "from_port": 0,
+      "to_port": 1
+    },
+    {
+      "from": "union",
+      "to": "sink",
+      "from_port": 0,
+      "to_port": 0
+    }
+  ]
+}

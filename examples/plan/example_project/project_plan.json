@@ -25,7 +25,9 @@
       "id": "sink",
       "type": 20,
       "config": {
-        "print_punctuation": true
+        "options": {
+          "print_punctuation": false
+        }
       }
     }
   ],

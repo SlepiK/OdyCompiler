@@ -19,7 +19,7 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::print {
 
             odyplan::v3::basic::operators::sink::print::details::PrintOperatorOptions printOptions;
 
-            printOptions.printPunctuation = options.value<bool>("printPunctuation", false);
+            printOptions.printPunctuation = options.value<bool>("print_punctuation", false);
 
             const bool hasIndices = config.contains("port_field_indices");
             const bool hasNames = config.contains("port_field_names");
