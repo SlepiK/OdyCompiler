@@ -8,6 +8,9 @@
         "format": 1,
         "params": {
           "path": "nexmark.person.10k.ndjson"
+        },
+        "options": {
+          "startTimestampPosition": "timestamp"
         }
       }
     },

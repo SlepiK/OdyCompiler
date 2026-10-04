@@ -29,25 +29,17 @@ namespace sierra::odycompiler::parser::testparser::operators::source::read {
 
             const auto options = config.value("options", nlohmann::json::object());
 
-            if (config.contains("startTimestampPosition")) {
-                readOptions.startTimestampPosition = options.value("startTimestampPosition", "");
+            if (options.contains("startTimestampPosition")) {
+                readOptions.startTimestampPosition = options["startTimestampPosition"].get<std::string>();
             }
 
-            if (config.contains("endTimestampPosition")) {
-                readOptions.endTimestampPosition = options.value("endTimestampPosition", "");
+            if (options.contains("endTimestampPosition")) {
+                readOptions.endTimestampPosition = options["endTimestampPosition"].get<std::string>();
             }
 
-            if (config.contains("delay")) {
-                readOptions.delay = std::chrono::milliseconds(options.value("delay", 0));
-            }
-
-            if (config.contains("allowedLateness")) {
-                readOptions.allowedLateness = std::chrono::milliseconds(options.value("allowedLateness", 0));
-            }
-
-            if (config.contains("useProgramClock")) {
-                readOptions.useProgramClock = options.value("useProgramClock", false);
-            }
+            readOptions.delay = std::chrono::milliseconds(options.value("delay", 0));
+            readOptions.allowedLateness = std::chrono::milliseconds(options.value("allowedLateness", 0));
+            readOptions.useProgramClock = options.value("useProgramClock", false);
 
             spdlog::info("Creating ReadOperator with format={}, path={}", formatId, params.value("path", "unknown"));
 
