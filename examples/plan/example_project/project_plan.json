@@ -1,0 +1,43 @@
+{
+  "version": "test",
+  "operators": [
+    {
+      "id": "source",
+      "type": 21,
+      "config": {
+        "format": 1,
+        "params": {
+          "path": "nexmark.person.10k.ndjson"
+        }
+      }
+    },
+    {
+      "id": "project",
+      "type": 10,
+      "config": {
+        "name_mapping": ["state"]
+      }
+    },
+    {
+      "id": "sink",
+      "type": 20,
+      "config": {
+        "print_punctuation": true
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "source",
+      "to": "project",
+      "from_port": 0,
+      "to_port": 0
+    },
+    {
+      "from": "project",
+      "to": "sink",
+      "from_port": 0,
+      "to_port": 0
+    }
+  ]
+}

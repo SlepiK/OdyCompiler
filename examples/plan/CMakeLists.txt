@@ -114,3 +114,4 @@ function(add_ody_test NAME)
 endfunction()
 
 add_subdirectory(example_read)
+add_subdirectory(example_project)
