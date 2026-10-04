@@ -84,13 +84,24 @@ function(add_ody_test NAME)
 
     set(OUTPUT_FILE "${TEST_DIR}/output.txt")
 
+    set(RUN_SCRIPT "${TEST_DIR}/run_test.sh")
+    file(WRITE ${RUN_SCRIPT}
+            "#!/bin/bash\n"
+            "set -e\n"
+            "export ODYPLAN_LIB_PATH='${ODYPLAN_LIB_DIR_RUNTIME}'\n"
+            "export LLVM_LIB_PATH='${LLVM_LIB_DIR_RUNTIME}'\n"
+            "export LD_LIBRARY_PATH='${ODYPLAN_LIB_DIR_RUNTIME}:${LLVM_LIB_DIR_RUNTIME}:$LD_LIBRARY_PATH'\n"
+            "exec '${COMPILE_EXECUTABLE}' ${EXEC_ARGS_LIST}\n"
+    )
+    execute_process(COMMAND chmod +x ${RUN_SCRIPT})
+
     add_custom_command(
             OUTPUT ${OUTPUT_FILE}
             COMMAND ${CMAKE_COMMAND} -E echo "=== ${NAME} ==="
             COMMAND ${CMAKE_COMMAND} -E echo "Compiling..."
             COMMAND ${ODYCOMPILER_EXECUTABLE} ${COMPILE_ARGS_LIST}
             COMMAND ${CMAKE_COMMAND} -E echo "Running..."
-            COMMAND sh -c "${CMAKE_COMMAND} -E env ${RUN_ENV} ${COMPILE_EXECUTABLE} ${EXEC_ARGS_LIST} > ${OUTPUT_FILE} 2>&1"
+            COMMAND sh -c "${RUN_SCRIPT} 2>&1 | tee ${OUTPUT_FILE}"
             DEPENDS ${COPIED_FILES} ${ODYCOMPILER_DEPENDENCY}
             WORKING_DIRECTORY ${TEST_DIR}
             COMMENT "Building and running ${NAME}"

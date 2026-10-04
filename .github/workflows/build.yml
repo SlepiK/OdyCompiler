@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  ODYPLAN_VERSION: "v0.6.1.12"
+  ODYPLAN_VERSION: "v0.6.2"
   ODYPLAN_ROOT: ${{ github.workspace }}/odyplan-install
   BUILD_TYPE: Release
 

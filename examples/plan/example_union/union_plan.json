@@ -20,7 +20,7 @@
       "config": {
         "format": 1,
         "params": {
-          "path": "nexmark.person.10k.ndjson"
+          "path": "nexmark.person.10k.2.ndjson"
         },
         "options": {
           "startTimestampPosition": "timestamp"
