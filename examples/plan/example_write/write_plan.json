@@ -1,0 +1,36 @@
+{
+  "version": "test",
+  "operators": [
+    {
+      "id": "source",
+      "type": 21,
+      "config": {
+        "format": 1,
+        "params": {
+          "path": "nexmark.person.10k.ndjson"
+        },
+        "options": {
+          "startTimestampPosition": "timestamp"
+        }
+      }
+    },
+    {
+      "id": "sink",
+      "type": 22,
+      "config": {
+        "format": 1,
+        "params": {
+          "path": "output.ndjson"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "source",
+      "to": "sink",
+      "from_port": 0,
+      "to_port": 0
+    }
+  ]
+}
