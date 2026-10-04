@@ -12,17 +12,18 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::window {
         try {
             spdlog::debug("Parsing TimeWindowOperator");
 
-            if (config.empty()) {
-                throw std::runtime_error("config is empty");
+            if (!config.contains("options")) {
+                throw std::runtime_error("config must contain 'options' field");
             }
 
+            const auto options = config.value("options", nlohmann::json::object());
             const auto timeWindowConfig = config.value("config", nlohmann::json::object());
 
             odyplan::v3::basic::operators::pipe::window::details::TimeWindowOptions timeOptions;
 
-            timeOptions.size = config.value<std::uint64_t>("size", 1);
-            timeOptions.slide = config.value<std::uint64_t>("slide", 1);
-            timeOptions.advance = config.value<std::uint64_t>("advance", 1);
+            timeOptions.size = options.value<std::uint64_t>("size", 1);
+            timeOptions.slide = options.value<std::uint64_t>("slide", 1);
+            timeOptions.advance = options.value<std::uint64_t>("advance", 1);
 
             spdlog::info("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeOptions.size, timeOptions.slide.value(), timeOptions.advance.value());
 

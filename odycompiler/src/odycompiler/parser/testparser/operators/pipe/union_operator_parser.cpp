@@ -11,6 +11,8 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::un {
         try {
             spdlog::debug("Parsing UnionOperator");
 
+
+
             spdlog::info("Creating UnionOperator");
 
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::union_::logical::UnionOperator>());

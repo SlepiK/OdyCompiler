@@ -15,11 +15,11 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::print {
                 throw std::runtime_error("config is empty");
             }
 
-            const auto printConfig = config.value("config", nlohmann::json::object());
+            const auto options = config.value("options", nlohmann::json::object());
 
-            odyplan::v3::basic::operators::sink::print::details::PrintOperatorOptions tPrintConfig;
+            odyplan::v3::basic::operators::sink::print::details::PrintOperatorOptions printOptions;
 
-            tPrintConfig.printPunctuation = config.value<bool>("printPunctuation", false);
+            printOptions.printPunctuation = options.value<bool>("printPunctuation", false);
 
             const bool hasIndices = config.contains("port_field_indices");
             const bool hasNames = config.contains("port_field_names");
@@ -35,7 +35,7 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::print {
 
                 spdlog::info("Creating PrintOperator with {} field indices", indices.size());
                 spdlog::debug("Indices: {}", nlohmann::json(indices).dump());
-                return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(tPrintConfig,indices));
+                return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(printOptions,indices));
 
             }
 
@@ -45,11 +45,11 @@ namespace sierra::odycompiler::parser::testparser::operators::sink::print {
                 spdlog::info("Creating PrintOperator with {} field names", names.size());
                 spdlog::debug("Names: {}", nlohmann::json(names).dump());
 
-                return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(tPrintConfig,names));
+                return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(printOptions,names));
             }
 
             spdlog::info("Creating PrintOperator with all fields");
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(tPrintConfig));
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::print::logical::PrintOperator>(printOptions));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse PrintOperator: {}", e.what()));
         }
