@@ -22,10 +22,16 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::window {
             odyplan::v3::basic::operators::pipe::window::details::TimeWindowOptions timeOptions;
 
             timeOptions.size = options.value<std::uint64_t>("size", 1);
-            timeOptions.slide = options.value<std::uint64_t>("slide", 1);
-            timeOptions.advance = options.value<std::uint64_t>("advance", 1);
 
-            spdlog::info("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeOptions.size, timeOptions.slide.value(), timeOptions.advance.value());
+            if (options.contains("slide")) {
+                timeOptions.slide = options["slide"].get<std::size_t>();
+            }
+
+            if (options.contains("advance")) {
+                timeOptions.advance = options["advance"].get<std::size_t>();
+            }
+
+            spdlog::info("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeOptions.size, timeOptions.slide.has_value() ? std::to_string(timeOptions.slide.value()) : "default" ,timeOptions.advance.has_value() ? std::to_string(timeOptions.advance.value()) : "default");
 
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::TimeWindowOperator>(timeOptions));
         } catch (const std::exception &e) {
