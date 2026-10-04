@@ -31,7 +31,7 @@
       "id": "union",
       "type": 12,
       "config": {
-        "assureOrder": true
+        "assure_order": true
       }
     },
     {

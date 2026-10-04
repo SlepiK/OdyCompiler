@@ -33,7 +33,7 @@ namespace sierra::odycompiler::parser::testparser::expression {
                 }
                 case odyplan::v3::basic::expression::logical::ExpressionType::FIELD_REFERENCE: {
                     const std::string field = expressionJson.value("field", "");
-                    const int portIndex = expressionJson.value("typeId", -1);
+                    const int portIndex = expressionJson.value("port", -1);
 
                     if (field.empty()) {
                         throw std::runtime_error("FieldReferenceExpression must have 'field' name");
