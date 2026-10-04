@@ -82,21 +82,22 @@ function(add_ody_test NAME)
 
     set(TARGET_NAME "odycompiler_example_plan_${NAME}")
 
+    set(OUTPUT_FILE "${TEST_DIR}/output.txt")
+
     add_custom_command(
-            OUTPUT ${TEST_DIR}/.done
+            OUTPUT ${OUTPUT_FILE}
             COMMAND ${CMAKE_COMMAND} -E echo "=== ${NAME} ==="
             COMMAND ${CMAKE_COMMAND} -E echo "Compiling..."
             COMMAND ${ODYCOMPILER_EXECUTABLE} ${COMPILE_ARGS_LIST}
             COMMAND ${CMAKE_COMMAND} -E echo "Running..."
-            COMMAND ${CMAKE_COMMAND} -E env ${RUN_ENV} ${COMPILE_EXECUTABLE} ${EXEC_ARGS_LIST}
-            COMMAND ${CMAKE_COMMAND} -E touch ${TEST_DIR}/.done
+            COMMAND sh -c "${CMAKE_COMMAND} -E env ${RUN_ENV} ${COMPILE_EXECUTABLE} ${EXEC_ARGS_LIST} > ${OUTPUT_FILE} 2>&1"
             DEPENDS ${COPIED_FILES} ${ODYCOMPILER_DEPENDENCY}
             WORKING_DIRECTORY ${TEST_DIR}
             COMMENT "Building and running ${NAME}"
             VERBATIM
     )
 
-    add_custom_target(${TARGET_NAME} ALL DEPENDS ${TEST_DIR}/.done)
+    add_custom_target(${TARGET_NAME} ALL DEPENDS ${OUTPUT_FILE})
 
     add_dependencies(odycompiler_example_plan ${TARGET_NAME})
 
@@ -104,7 +105,7 @@ function(add_ody_test NAME)
         set(EXPECTED_FILE "${TEST_INPUT_DIR}/${ARG_EXEC_EXPECTED}")
         add_test(
                 NAME ${TARGET_NAME}
-                COMMAND ${CMAKE_COMMAND} -E compare_files ${TEST_DIR}/.done ${EXPECTED_FILE}
+                COMMAND ${CMAKE_COMMAND} -E compare_files ${OUTPUT_FILE} ${EXPECTED_FILE}
                 WORKING_DIRECTORY ${TEST_DIR}
         )
         set_tests_properties(${TARGET_NAME} PROPERTIES
