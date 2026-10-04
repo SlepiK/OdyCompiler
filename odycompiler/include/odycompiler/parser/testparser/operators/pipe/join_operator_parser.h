@@ -3,7 +3,7 @@
 
 #include <odycompiler/parser/operator_parser.h>
 #include <core/shared/types/operator_type_id.h>
-#include <basic/operators/pipe/join/logical/details/join_config.h>
+#include <basic/operators/pipe/join/details/join_operator_options.h>
 #include <basic/operators/pipe/join/logical/join_operator.h>
 #include <odycompiler/parser/testparser/expression/expression_parser.h>
 

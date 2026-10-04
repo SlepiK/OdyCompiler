@@ -1,0 +1,50 @@
+{
+  "version": "test",
+  "operators": [
+    {
+      "id": "source",
+      "type": 21,
+      "config": {
+        "format": 1,
+        "params": {
+          "path": "nexmark.person.10k.ndjson"
+        },
+        "options": {
+          "startTimestampPosition": "timestamp"
+        }
+      }
+    },
+    {
+      "id": "count_window",
+      "type": 30,
+      "config": {
+        "options": {
+          "size": 5
+        }
+      }
+    },
+    {
+      "id": "sink",
+      "type": 20,
+      "config": {
+        "options": {
+          "print_punctuation": false
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "source",
+      "to": "count_window",
+      "from_port": 0,
+      "to_port": 0
+    },
+    {
+      "from": "count_window",
+      "to": "sink",
+      "from_port": 0,
+      "to_port": 0
+    }
+  ]
+}

@@ -25,26 +25,28 @@ namespace sierra::odycompiler::parser::testparser::operators::source::read {
 
             const auto ioConfig = config.value("params", nlohmann::json::object());
 
-            odyplan::v3::basic::operators::source::read::details::LReadOperatorOptions options;
+            odyplan::v3::basic::operators::source::read::details::LReadOperatorOptions readOptions;
 
-            if (config.contains("startTimestampPosition")) {
-                options.startTimestampPosition = config.value("startTimestampPosition", "");
+            const auto options = config.value("options", nlohmann::json::object());
+
+            if (options.contains("startTimestampPosition")) {
+                readOptions.startTimestampPosition = options["startTimestampPosition"].get<std::string>();
             }
 
-            if (config.contains("endTimestampPosition")) {
-                options.endTimestampPosition = config.value("endTimestampPosition", "");
+            if (options.contains("endTimestampPosition")) {
+                readOptions.endTimestampPosition = options["endTimestampPosition"].get<std::string>();
             }
 
-            options.delay = std::chrono::milliseconds(config.value("delay", 0));
-            options.allowedLateness = std::chrono::milliseconds(config.value("allowedLateness", 0));
-            options.useProgramClock = config.value("useProgramClock", false);
+            readOptions.delay = std::chrono::milliseconds(options.value("delay", 0));
+            readOptions.allowedLateness = std::chrono::milliseconds(options.value("allowedLateness", 0));
+            readOptions.useProgramClock = options.value("useProgramClock", false);
 
-            spdlog::info("Creating with format={}, path={}", formatId, params.value("path", "unknown"));
+            spdlog::info("Creating ReadOperator with format={}, path={}", formatId, params.value("path", "unknown"));
 
             return lPlan.addOperator(odyplan::v3::basic::operators::source::read::logical::ReadOperator::fromAutoSchema(
                 ioFormat,
                 ioConfig,
-                options
+                readOptions
             ));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse ReadOperator: {}", e.what()));

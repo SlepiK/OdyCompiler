@@ -35,6 +35,7 @@ if(ENABLE_TOOLING)
     include(cmake/tooling.cmake)
 endif ()
 
+enable_testing()
 add_subdirectory(odycompiler)
 add_subdirectory(examples)
 
