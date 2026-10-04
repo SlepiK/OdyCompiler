@@ -11,37 +11,38 @@ namespace sierra::odycompiler::parser::testparser::expression {
 
                     auto left = parseExpression(expressionJson.value("left", nlohmann::json::object()));
                     auto right = parseExpression(expressionJson.value("right", nlohmann::json::object()));
-
-                    SPDLOG_DEBUG("Creating CompareExpression with op={]", std::to_underlying(opr));
+                    SPDLOG_DEBUG("Creating CompareExpression with op={}", std::to_underlying(opr));
 
                     return std::make_unique<odyplan::v3::basic::expression::logical::CompareExpression>(std::move(left), opr, std::move(right));
                 }
                 case odyplan::v3::basic::expression::logical::ExpressionType::LOGICAL: {
                     if (const auto opr = parseLogicalOperator(expressionJson); opr == odyplan::v3::basic::expression::LogicalOp::NOT) {
-                        auto left = parseExpression(expressionJson.value("left", nlohmann::json::object()));
+                        auto operand = parseExpression(expressionJson.value("operand", expressionJson.value("left", nlohmann::json::object())));
 
-                        SPDLOG_DEBUG("Creating LogicalExpression with op={]", std::to_underlying(opr));
+                        SPDLOG_DEBUG("Creating LogicalExpression with op={}", std::to_underlying(opr));
 
-                        return std::make_unique<odyplan::v3::basic::expression::logical::LogicalExpression>(opr, std::move(left));
+                        return std::make_unique<odyplan::v3::basic::expression::logical::LogicalExpression>(opr, std::move(operand));
                     } else {
                         auto left = parseExpression(expressionJson.value("left", nlohmann::json::object()));
                         auto right = parseExpression(expressionJson.value("right", nlohmann::json::object()));
 
-                        SPDLOG_DEBUG("Creating LogicalExpression with op={]", std::to_underlying(opr));
+                        SPDLOG_DEBUG("Creating LogicalExpression with op={}", std::to_underlying(opr));
 
                         return std::make_unique<odyplan::v3::basic::expression::logical::LogicalExpression>(std::move(left), opr, std::move(right));
                     }
                 }
                 case odyplan::v3::basic::expression::logical::ExpressionType::FIELD_REFERENCE: {
                     const std::string field = expressionJson.value("field", "");
-                    const int portIndex = expressionJson["port"];
+                    const int portIndex = expressionJson.value("typeId", -1);
 
                     if (field.empty()) {
                         throw std::runtime_error("FieldReferenceExpression must have 'field' name");
                     }
 
                     SPDLOG_DEBUG("Creating FieldReferenceExpression with field={}, port={}", field, portIndex);
-
+                    if (portIndex == -1) {
+                        return std::make_unique<odyplan::v3::basic::expression::logical::FieldReferenceExpression>(field);
+                    }
                     return std::make_unique<odyplan::v3::basic::expression::logical::FieldReferenceExpression>(field, portIndex);
                 }
                 case odyplan::v3::basic::expression::logical::ExpressionType::CONSTANT: {
@@ -49,7 +50,7 @@ namespace sierra::odycompiler::parser::testparser::expression {
                     const int typeId = expressionJson["typeId"];
 
                     if (value.empty()) {
-                        throw std::runtime_error("FieldReferenceExpression must have 'value'");
+                        throw std::runtime_error("ConstantExpression must have 'value'");
                     }
 
                     SPDLOG_DEBUG("Creating ConstantExpression with value={}, typeId={}", value, typeId);

@@ -115,3 +115,4 @@ endfunction()
 
 add_subdirectory(example_read)
 add_subdirectory(example_project)
+add_subdirectory(example_select)
