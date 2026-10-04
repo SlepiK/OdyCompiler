@@ -20,7 +20,7 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::join {
                 throw std::runtime_error("SelectOperator config must contain 'predicate' field");
             }
 
-            bool assureOrder = config.value("assure_order", true);
+            const bool assureOrder = config.value("assure_order", true);
 
             const auto options = config.value("options", nlohmann::json::object());
 

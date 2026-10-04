@@ -11,11 +11,11 @@ namespace sierra::odycompiler::parser::testparser::operators::pipe::un {
         try {
             spdlog::debug("Parsing UnionOperator");
 
-
+            const bool assureOrder = config.value("assure_order", true);
 
             spdlog::info("Creating UnionOperator");
 
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::union_::logical::UnionOperator>());
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::union_::logical::UnionOperator>(assureOrder));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse UnionOperator: {}", e.what()));
         }
