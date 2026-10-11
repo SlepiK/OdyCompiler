@@ -1,6 +1,5 @@
 include(FetchContent)
 
-
 option(ODYPLAN_USE_SYSTEM_DEPS "Use system-installed dependencies (production)" ON)
 
 message(STATUS "Searching spdlog")
@@ -63,6 +62,25 @@ else()
     endif()
 endif()
 
+message(STATUS "Searching boost")
+
+if(ODYPLAN_USE_SYSTEM_DEPS)
+    find_package(Boost REQUIRED COMPONENTS filesystem)
+    message(STATUS "Found system Boost: ${Boost_INCLUDE_DIRS}")
+else()
+    find_package(Boost COMPONENTS dll QUIET)
+    if(NOT Boost_FOUND)
+        FetchContent_Declare(
+                boost
+                GIT_REPOSITORY https://github.com/boostorg/boost.git
+                GIT_TAG boost-1.84.0
+                SYSTEM
+        )
+        FetchContent_MakeAvailable(boost)
+        message(STATUS "Fetched Boost: ${boost_SOURCE_DIR}")
+    endif()
+endif()
+
 if(NOT ODYPLAN_USE_SYSTEM_DEPS)
     if(TARGET spdlog::spdlog)
         include_directories(${spdlog_SOURCE_DIR}/include)
@@ -93,7 +111,6 @@ if(NOT zstd_FOUND)
     endif()
     message(STATUS "Found zstd library: ${ZSTD_LIB}")
 endif()
-
 
 message(STATUS "Searching odyplan")
 

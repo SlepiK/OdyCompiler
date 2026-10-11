@@ -5,6 +5,7 @@
 #include <odycompiler/compiler.h>
 #include <odycompiler/timer.h>
 #include <CLI/CLI.hpp>
+#include <boost/dll.hpp>
 
 #ifndef ODYCOMPILER_VERSION
     #define ODYCOMPILER_VERSION "unknown"
@@ -68,6 +69,9 @@ sierra::odycompiler::Compiler::Config parseCommandArguments(const int argc, char
     compilerApp.add_flag("-v,--verbose", compilerConfig.verbose, "Verbose output");
     compilerApp.add_flag("--dry", compilerConfig.dryrun, "Execute a dry-run");
     compilerApp.add_flag("--timer", compilerConfig.timer, "Measure time consumption during compilation");
+
+    std::filesystem::path cfgPath = std::filesystem::path(boost::dll::program_location().string()).parent_path() / "config.cfg";
+    compilerApp.set_config("--config",cfgPath.string(), "Read config from file", false);
 
     if (argc == 1) {
         std::cout << compilerApp.help() << std::endl;
