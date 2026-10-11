@@ -2,6 +2,7 @@
 #include <odycompiler/compiler.h>
 
 #include <odycompiler/parser/testparser/test_plan_parser.h>
+#include <odycompiler/parser/odyparser/odysseus_plan_parser.h>
 
 namespace sierra::odycompiler {
     Compiler::Compiler(Config config) : mConfig(std::move(config)){
@@ -15,6 +16,7 @@ namespace sierra::odycompiler {
 
     void Compiler::loadBuiltinParsers() {
         registerParser(std::make_unique<parser::testparser::TestPlanParser>());
+        registerParser(std::make_unique<parser::odyparser::OdysseusPlanParser>());
     }
 
     void Compiler::compileByFile(const std::string &filepath) {
