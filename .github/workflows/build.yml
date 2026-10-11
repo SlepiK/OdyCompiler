@@ -40,7 +40,10 @@ jobs:
             libffi-dev \
             libedit-dev \
             libcurl4-openssl-dev \
-            libcli11-dev
+            libcli11-dev \
+            libboost-dev \
+            libboost-filesystem-dev \
+            libboost-system-dev
 
       - name: Remove system LLVM/Clang
         run: |
