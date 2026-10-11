@@ -36,6 +36,8 @@ target_link_libraries(${LIB_NAME} PUBLIC
         spdlog::spdlog
         nlohmann_json::nlohmann_json
         CLI11::CLI11
+        Boost::headers
+        Boost::filesystem
 
         ${ODYCOMPILER_SYSTEM_LIBS}
 )
