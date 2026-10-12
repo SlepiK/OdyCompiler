@@ -65,9 +65,3 @@ if(ENABLE_TOOLING)
     register_lint_sources(${LIB_SOURCES} ${MAIN_SOURCE} ${HEADERS})
     register_tidy_sources(${LIB_SOURCES} ${MAIN_SOURCE})
 endif()
-
-install(DIRECTORY include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.hpp"
-        PATTERN "*.h"
-)
