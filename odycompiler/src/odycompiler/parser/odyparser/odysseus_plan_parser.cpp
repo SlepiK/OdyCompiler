@@ -298,9 +298,9 @@ namespace sierra::odycompiler::parser::odyparser {
     std::string OdysseusPlanParser::mapOperatorType(const std::string& type) {
         //QD - Change later by something better
         static const std::unordered_map<std::string, std::string> map = {
-            {"ACCESS", "read"}, {"SINK", "write"}, {"TIMEWINDOW", "timewindow"},
-            {"JOIN", "join"}, {"TOTUPLE", "convert"}, {"MAP", "map"},
-            {"FILTER", "filter"}, {"UNION", "union"}
+            {"ACCESS", "read"}, {"SENDER", "write"}, {"TIMEWINDOW", "timewindow"},
+            {"JOIN", "join"}, {"ELEMENTWINDOW", "countwindow"}, {"UNION", "union"},
+            {"SELECT", "select"}, {"PROJECT", "project"}
         };
         auto it = map.find(type);
         return (it != map.end()) ? it->second : type;
@@ -309,8 +309,8 @@ namespace sierra::odycompiler::parser::odyparser {
     int OdysseusPlanParser::getOperatorTypeId(const std::string& type) {
         //QD - Change later by something better
         static const std::unordered_map<std::string, int> map = {
-            {"read", 21}, {"write", 20}, {"timewindow", 31}, {"join", 13},
-            {"convert", 50}, {"map", 60}, {"filter", 70}, {"union", 80}, {"print", 20}
+            {"read", 21}, {"write", 22}, {"timewindow", 31}, {"join", 13},
+            {"countwindow", 30}, {"union", 12}, {"select", 11}, {"project", 10}, {"print", 20}
         };
         auto it = map.find(type);
         return (it != map.end()) ? it->second : -1;
@@ -440,7 +440,6 @@ const std::unordered_map<std::string, std::string>& totupleRedirect) {
             const auto fromId = conn.value<std::string>("from", "");
             const auto toId = conn.value<std::string>("to", "");
             const auto fromPort = conn.value<odyplan::v3::core::shared::identifiers::PortId>("from_port", 0);
-            //const auto toPort = conn.value<odyplan::v3::core::shared::identifiers::PortId>("to_port", 0);
 
             odyplan::v3::core::shared::identifiers::PortId toPort = 0;
             while (usedPorts[toId].contains(toPort)) {
