@@ -1,0 +1,23 @@
+inputPerson = ACCESS({
+source='json0',
+wrapper='GenericPull',
+transport='File',
+protocol='JSON',
+dataHandler='KeyValueObject',
+options=[['filename','nexmark.person.10k.ndjson']],
+schema=[['timestamp','STARTTIMESTAMP']]
+})
+inputBid = ACCESS({
+source='json1',
+wrapper='GenericPull',
+transport='File',
+protocol='JSON',
+dataHandler='KeyValueObject',
+options=[['filename','nexmark.bid.10k.ndjson']],
+schema=[['timestamp','STARTTIMESTAMP']]
+})
+timewinPerson = TIMEWINDOW({size = 15000, advance = 1}, inputPerson)
+timewinBid = TIMEWINDOW({size = 15000, advance = 1}, inputBid)
+timewinPersonT = TOTUPLE({schema=[['timestamp', 'STARTTIMESTAMP'],['id', 'Integer'],['name', 'String'],['email', 'String'],['creditcard', 'String'],['city', 'String'],['state', 'String']],type='person'}, timewinPerson)
+timewinBidT = TOTUPLE({schema=[['timestamp', 'STARTTIMESTAMP'],['auction', 'Integer'],['bidder', 'Integer'],['datetime', 'Integer'],['price', 'Double']],type='bid'}, timewinBid)
+winjoin = JOIN({PREDICATE='id = bidder '},timewinPersonT,timewinBidT)

@@ -11,7 +11,6 @@ namespace sierra::odycompiler::parser::odyparser::operators::source::read {
         odyplan::v3::core::logical::plan::Plan &lPlan, const nlohmann::json &config) {
         try {
             spdlog::debug("Parsing ReadOperator");
-            spdlog::debug("Config JSON: {}", config.dump(2));
 
             std::string filePath;
             if (config.contains("options") && config["options"].is_array()) {

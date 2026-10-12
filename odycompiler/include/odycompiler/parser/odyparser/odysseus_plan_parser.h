@@ -20,7 +20,8 @@ namespace sierra::odycompiler::parser::odyparser {
     private:
         OdysseusOperatorParserRegistry& mRegistry = OdysseusOperatorParserRegistry::instance();
 
-        std::unique_ptr<sierra::odyplan::v3::core::logical::plan::Plan> parseJsonPlan(const nlohmann::json& json);
+        std::unique_ptr<sierra::odyplan::v3::core::logical::plan::Plan> parseJsonPlan(const nlohmann::json &json,
+            const std::unordered_map<std::string, std::string> &totupleRedirect);
 
         nlohmann::json configStrToJson(const std::string& config);
 

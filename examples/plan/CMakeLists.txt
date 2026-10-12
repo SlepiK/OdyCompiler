@@ -134,4 +134,7 @@ add_subdirectory(example_write)
 add_subdirectory(example_union)
 add_subdirectory(example_join)
 add_subdirectory(example_join_window)
+
+target_compile_definitions(odycompiler_lib PRIVATE ODYSSEUS_PLAN_PARSER_AUTO_PRINT_OPERATOR)
 add_subdirectory(ody_example)
+add_subdirectory(ody_example_join)

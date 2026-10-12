@@ -1,4 +1,7 @@
 #include <regex>
+#include <queue>
+#include <set>
+#include <fmt/ranges.h>
 #include <odycompiler/parser/odyparser/odysseus_plan_parser.h>
 
 namespace sierra::odycompiler::parser::odyparser {
@@ -58,25 +61,23 @@ namespace sierra::odycompiler::parser::odyparser {
                     opJson["id"] = op->at("id").get<std::string>();
                     opJson["type"] = getOperatorTypeId(mapOperatorType(type));
                     opJson["config"] = op->value("config", nlohmann::json::object());
+
+                    if (op->contains("args")) {
+                        std::string argsStr = op->at("args").get<std::string>();
+                        opJson["args"] = argsStr;
+                        hasOutgoingConnection.insert(opJson["id"]);
+                    }
+
                     json["operators"].push_back(opJson);
 
                     operatorIndex[opJson["id"]] = static_cast<int>(json["operators"].size()) - 1;
-
-                    if (op->contains("args")) {
-                        buildConnections(op->at("args").get<std::string>(), json["connections"], operatorIndex, hasOutgoingConnection,
-                                         totupleRedirect);
-                    }
                 }
                 currentBlock.clear();
                 inBlock = false;
             }
         }
 
-#ifdef ODYSSEUS_PLAN_PARSER_AUTO_PRINT_OPERATOR
-        addPrintOperators(json["operators"], json["connections"], operatorIndex, hasOutgoingConnection);
-#endif
-
-        return parseJsonPlan(json);
+        return parseJsonPlan(json, totupleRedirect);
     }
 
     const std::string_view OdysseusPlanParser::getName() const {
@@ -228,63 +229,76 @@ namespace sierra::odycompiler::parser::odyparser {
                 }
             }
 
-            try {
-                if (value.starts_with('[') || value.starts_with('{')) {
-                    result[key] = nlohmann::json::parse(value);
-                } else if (value.starts_with('"')) {
-                    result[key] = nlohmann::json::parse(value);
-                } else if (!value.empty() && (std::isdigit(value[0]) || value[0] == '-')) {
-                    result[key] = nlohmann::json::parse(value);
-                } else {
+            bool expressionParsed = false;
+            if (isExpressionField(key) && !value.starts_with('{')) {
+                nlohmann::json exprJson = parseInfixExpression(value);
+                spdlog::debug("Parsed expression: {}", exprJson.dump());
+                result[key] = exprJson;
+                expressionParsed = true;
+            }
+
+            if (!expressionParsed) {
+                try {
+                    if (value.starts_with('[') || value.starts_with('{')) {
+                        result[key] = nlohmann::json::parse(value);
+                    } else if (value.starts_with('"')) {
+                        result[key] = nlohmann::json::parse(value);
+                    } else if (!value.empty() && (std::isdigit(value[0]) || value[0] == '-')) {
+                        result[key] = nlohmann::json::parse(value);
+                    } else {
+                        result[key] = value;
+                    }
+                } catch (nlohmann::json::parse_error &e) {
+                    spdlog::warn("Failed to parse '{}': {}", key, e.what());
                     result[key] = value;
                 }
-            } catch (nlohmann::json::parse_error &e) {
-                spdlog::warn("Failed to parse '{}': {}", key, e.what());
-                result[key] = value;
             }
 
             while (i < inner.size() && (std::isspace(inner[i]) || inner[i] == ',')) {
                 i++;
             }
         }
-
-        spdlog::debug("Parsed config: {}", result.dump(2));
         return result;
     }
 
     void OdysseusPlanParser::buildConnections(const std::string& args, nlohmann::json& connections, const std::unordered_map<std::string, int>& opIndex, std::unordered_set<std::string>& hasOutgoing, const std::unordered_map<std::string, std::string>& totupleRedirect) {
-        std::vector<std::string> ops;
         std::stringstream ss(args);
-        std::string op;
+        std::string toOp;
 
-        while (std::getline(ss, op, ',')) {
-            op = trim(op);
-
-            while (totupleRedirect.contains(op)) {
-                spdlog::debug("Redirecting TOTUPLE: {} → {}", op, totupleRedirect.at(op));
-                op = totupleRedirect.at(op);
-            }
-
-            if (opIndex.contains(op)) {
-                ops.push_back(op);
-                hasOutgoing.insert(op);
+        std::string fromOp;
+        for (const auto& [name, idx] : opIndex) {
+            if (idx == static_cast<int>(opIndex.size()) - 1) {
+                fromOp = name;
+                break;
             }
         }
 
-        for (size_t i = 0; i + 1 < ops.size(); ++i) {
-            nlohmann::json conn;
-            conn["from"] = ops[i];
-            conn["to"] = ops[i + 1];
-            conn["from_port"] = 0;
-            conn["to_port"] = 0;
-            connections.push_back(conn);
+        while (std::getline(ss, toOp, ',')) {
+            toOp = trim(toOp);
+
+            while (totupleRedirect.contains(toOp)) {
+                toOp = totupleRedirect.at(toOp);
+            }
+
+            if (!toOp.empty()) {
+                spdlog::debug("  Adding connection: {} → {}", fromOp, toOp);
+
+                nlohmann::json conn;
+                conn["from"] = fromOp;
+                conn["to"] = toOp;
+                conn["from_port"] = 0;
+                conn["to_port"] = 0;
+                connections.push_back(conn);
+
+                hasOutgoing.insert(fromOp);
+            }
         }
     }
 
     std::string OdysseusPlanParser::mapOperatorType(const std::string& type) {
         //QD - Change later by something better
         static const std::unordered_map<std::string, std::string> map = {
-            {"ACCESS", "read"}, {"SINK", "write"}, {"TIMEWINDOW", "window"},
+            {"ACCESS", "read"}, {"SINK", "write"}, {"TIMEWINDOW", "timewindow"},
             {"JOIN", "join"}, {"TOTUPLE", "convert"}, {"MAP", "map"},
             {"FILTER", "filter"}, {"UNION", "union"}
         };
@@ -295,67 +309,170 @@ namespace sierra::odycompiler::parser::odyparser {
     int OdysseusPlanParser::getOperatorTypeId(const std::string& type) {
         //QD - Change later by something better
         static const std::unordered_map<std::string, int> map = {
-            {"read", 21}, {"write", 20}, {"window", 30}, {"join", 40},
+            {"read", 21}, {"write", 20}, {"timewindow", 31}, {"join", 13},
             {"convert", 50}, {"map", 60}, {"filter", 70}, {"union", 80}, {"print", 20}
         };
         auto it = map.find(type);
         return (it != map.end()) ? it->second : -1;
     }
 
-    std::unique_ptr<sierra::odyplan::v3::core::logical::plan::Plan> OdysseusPlanParser::parseJsonPlan(const nlohmann::json& json) {
+    std::unique_ptr<sierra::odyplan::v3::core::logical::plan::Plan> OdysseusPlanParser::parseJsonPlan(
+    const nlohmann::json &json,
+const std::unordered_map<std::string, std::string>& totupleRedirect) {
         if (!json.contains("operators")) {
             throw std::runtime_error("Input must contain 'operators' array");
         }
 
         odyplan::v3::core::logical::plan::Plan lPlan;
         std::unordered_map<std::string, odyplan::v3::core::shared::identifiers::OperatorId> operatorIdMap;
+        std::unordered_set<std::string> hasOutgoingConnection;
 
-        for (const auto& jsonOperator : json["operators"]) {
+        spdlog::debug("Creating {} operators...", json["operators"].size());
+
+        for (const auto &jsonOperator: json["operators"]) {
             const auto id = jsonOperator.value<std::string>("id", "");
             const auto type = jsonOperator.value<odyplan::v3::core::shared::types::OperatorTypeId>("type", -1);
 
-            if (id.empty() || type == std::to_underlying(odyplan::v3::core::shared::types::BuiltinOperatorType::UNKNOWN)) {
-                throw std::runtime_error("Operator must have supported 'id' and 'type' fields");
+            if (id.empty() || type ==
+                std::to_underlying(odyplan::v3::core::shared::types::BuiltinOperatorType::UNKNOWN)) {
+                throw std::runtime_error(fmt::format("Operator must have supported 'id' and 'type' fields: {}", id));
             }
 
-            spdlog::debug("Parsing operator: {} (type: {})", id, type);
+            spdlog::debug("  [{}] Creating: {} (type: {})", operatorIdMap.size(), id, type);
 
             const auto parser = mRegistry.createParser(type);
             const auto config = jsonOperator.value("config", nlohmann::json::object());
             operatorIdMap[id] = parser->parse(lPlan, config);
         }
 
-        spdlog::info("Parsed {} operators", operatorIdMap.size());
+        spdlog::info("Created {} operators", operatorIdMap.size());
 
-        if (json.contains("connections")) {
-            for (const auto& conn : json["connections"]) {
-                const auto fromId = conn.value<std::string>("from", "");
-                const auto toId = conn.value<std::string>("to", "");
-                const odyplan::v3::core::shared::identifiers::PortId fromPort = conn.value("from_port", -1);
-                const odyplan::v3::core::shared::identifiers::PortId toPort = conn.value("to_port", -1);
+        std::vector<nlohmann::json> allConnections;
 
-                if (fromId.empty() || toId.empty()) {
-                    throw std::runtime_error("Connection must have supported 'from' and 'to'");
-                }
+        for (const auto &jsonOperator: json["operators"]) {
+            if (jsonOperator.contains("args")) {
+                std::string toId = jsonOperator["id"];
+                std::string argsStr = jsonOperator["args"];
 
-                if (!operatorIdMap.contains(fromId) || !operatorIdMap.contains(toId)) {
-                    throw std::runtime_error("Unknown operator in connection");
-                }
+                spdlog::debug("  Processing args for {}: {}", toId, argsStr);
 
-                lPlan.connect(
-                    odyplan::v3::core::shared::operators::OperatorPortReference{
-                        .operatorId = operatorIdMap[fromId],
-                        .portId = fromPort
-                    },
-                    odyplan::v3::core::shared::operators::OperatorPortReference{
-                        .operatorId = operatorIdMap[toId],
-                        .portId = toPort
+                std::stringstream ss(argsStr);
+                std::string fromId;
+
+                while (std::getline(ss, fromId, ',')) {
+                    fromId = trim(fromId);
+
+                    while (totupleRedirect.contains(fromId)) {
+                        spdlog::debug("    Redirecting TOTUPLE: {} → {}", fromId, totupleRedirect.at(fromId));
+                        fromId = totupleRedirect.at(fromId);
                     }
-                );
+
+                    if (!fromId.empty()) {
+                        spdlog::debug("  Adding connection: {} → {}", fromId, toId);
+
+                        nlohmann::json conn;
+                        conn["from"] = fromId;
+                        conn["to"] = toId;
+                        conn["from_port"] = 0;
+                        conn["to_port"] = 0;
+                        allConnections.push_back(conn);
+
+                        hasOutgoingConnection.insert(fromId);
+                    }
+                }
+            }
+        }
+
+#ifdef ODYSSEUS_PLAN_PARSER_AUTO_PRINT_OPERATOR
+        int printCnt = 0;
+        for (const auto &jsonOperator: json["operators"]) {
+            std::string opId = jsonOperator["id"];
+
+            if (!hasOutgoingConnection.contains(opId) && !opId.starts_with("print_")) {
+                std::string printId = fmt::format("print_{}", printCnt++);
+
+                spdlog::info("Adding PrintOperator '{}' after '{}'", printId, opId);
+
+                nlohmann::json printOp;
+                printOp["id"] = printId;
+                printOp["type"] = getOperatorTypeId("print");
+                printOp["config"] = {{"options", nlohmann::json::object()}};
+
+                const auto parser = mRegistry.createParser(printOp["type"]);
+                operatorIdMap[printId] = parser->parse(lPlan, printOp["config"]);
+
+                nlohmann::json conn;
+                conn["from"] = opId;
+                conn["to"] = printId;
+                conn["from_port"] = 0;
+                conn["to_port"] = 0;
+                allConnections.push_back(conn);
+            }
+        }
+        spdlog::info("Added {} PrintOperators", printCnt);
+#endif
+
+        std::vector<std::pair<size_t, nlohmann::json> > sortedConnections;
+
+        for (const auto &conn: allConnections) {
+            std::string fromId = conn.value("from", "");
+
+            size_t pos = 0;
+            for (const auto &op: json["operators"]) {
+                if (op["id"] == fromId) {
+                    break;
+                }
+                pos++;
             }
 
-            spdlog::info("Parsed {} connections", json["connections"].size());
+            sortedConnections.push_back({pos, conn});
         }
+
+        std::sort(sortedConnections.begin(), sortedConnections.end(),
+                  [](const auto &a, const auto &b) {
+                      return a.first < b.first;
+                  });
+
+        std::unordered_map<std::string, std::set<odyplan::v3::core::shared::identifiers::PortId>> usedPorts;
+
+        int connIdx = 0;
+        for (const auto &[pos, conn]: sortedConnections) {
+            const auto fromId = conn.value<std::string>("from", "");
+            const auto toId = conn.value<std::string>("to", "");
+            const auto fromPort = conn.value<odyplan::v3::core::shared::identifiers::PortId>("from_port", 0);
+            //const auto toPort = conn.value<odyplan::v3::core::shared::identifiers::PortId>("to_port", 0);
+
+            odyplan::v3::core::shared::identifiers::PortId toPort = 0;
+            while (usedPorts[toId].contains(toPort)) {
+                toPort++;
+            }
+            usedPorts[toId].insert(toPort);
+
+            spdlog::debug("  [{}] (pos {}) {} → {}", connIdx, pos, fromId, toId);
+
+            if (fromId.empty() || toId.empty()) {
+                throw std::runtime_error("Connection must have 'from' and 'to'");
+            }
+
+            if (!operatorIdMap.contains(fromId) || !operatorIdMap.contains(toId)) {
+                throw std::runtime_error(fmt::format("Unknown operator: {} → {}", fromId, toId));
+            }
+
+            lPlan.connect(
+                odyplan::v3::core::shared::operators::OperatorPortReference{
+                    .operatorId = operatorIdMap[fromId],
+                    .portId = fromPort
+                },
+                odyplan::v3::core::shared::operators::OperatorPortReference{
+                    .operatorId = operatorIdMap[toId],
+                    .portId = toPort
+                }
+            );
+
+            connIdx++;
+        }
+
+        spdlog::info("Built {} connections", connIdx);
 
         return std::make_unique<sierra::odyplan::v3::core::logical::plan::Plan>(std::move(lPlan));
     }
@@ -422,7 +539,10 @@ namespace sierra::odycompiler::parser::odyparser {
             node["value"] = t;
         } else {
             node["type"] = 0;
-            node["field"] = t;
+            std::string fieldName = t;
+            if (fieldName.starts_with('"')) fieldName = fieldName.substr(1);
+            if (fieldName.ends_with('"')) fieldName = fieldName.substr(0, fieldName.size() - 1);
+            node["field"] = trim(fieldName);
             node["port"] = -1;
         }
 
@@ -433,27 +553,38 @@ namespace sierra::odycompiler::parser::odyparser {
     void OdysseusPlanParser::addPrintOperators(nlohmann::json& operators, nlohmann::json& connections, std::unordered_map<std::string, int>& opIndex, std::unordered_set<std::string>& hasOutgoing) {
         int printCnt = 0;
 
+        std::vector<std::string> endOperators;
         for (const auto& op : operators) {
-            if (std::string opId = op["id"]; !hasOutgoing.contains(opId)) {
-                std::string printId = fmt::format("print_{}", printCnt++);
-
-                spdlog::info("Adding PrintOperator '{}' after '{}'", printId, opId);
-
-                nlohmann::json printOp;
-                printOp["id"] = printId;
-                printOp["type"] = getOperatorTypeId("print");
-                printOp["config"] = {
-                    {"options", nlohmann::json::object()}
-                };
-                operators.push_back(printOp);
-
-                nlohmann::json conn;
-                conn["from"] = opId;
-                conn["to"] = printId;
-                conn["from_port"] = 0;
-                conn["to_port"] = 0;
-                connections.push_back(conn);
+            std::string opId = op["id"];
+            if (!hasOutgoing.contains(opId)) {
+                endOperators.push_back(opId);
             }
+        }
+
+        spdlog::debug("Found {} end operators (no outgoing connections)", endOperators.size());
+
+        for (const auto& opId : endOperators) {
+            if (opId.starts_with("print_")) {
+                continue;
+            }
+            std::string printId = fmt::format("print_{}", printCnt++);
+
+            spdlog::info("Adding PrintOperator '{}' after '{}'", printId, opId);
+
+            nlohmann::json printOp;
+            printOp["id"] = printId;
+            printOp["type"] = getOperatorTypeId("print");
+            printOp["config"] = {
+                {"options", nlohmann::json::object()}
+            };
+            operators.push_back(printOp);
+
+            nlohmann::json conn;
+            conn["from"] = opId;
+            conn["to"] = printId;
+            conn["from_port"] = 0;
+            conn["to_port"] = 0;
+            connections.push_back(conn);
         }
 
         spdlog::info("Added {} PrintOperators", printCnt);

@@ -12,23 +12,16 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::window {
         try {
             spdlog::debug("Parsing TimeWindowOperator");
 
-            if (!config.contains("options")) {
-                throw std::runtime_error("config must contain 'options' field");
-            }
-
-            const auto options = config.value("options", nlohmann::json::object());
-            const auto timeWindowConfig = config.value("config", nlohmann::json::object());
-
             odyplan::v3::basic::operators::pipe::window::details::TimeWindowOptions timeOptions;
 
-            timeOptions.size = options.value<std::uint64_t>("size", 1);
+            timeOptions.size = config.value<std::uint64_t>("size", 1);
 
-            if (options.contains("slide")) {
-                timeOptions.slide = options["slide"].get<std::size_t>();
+            if (config.contains("slide")) {
+                timeOptions.slide = config["slide"].get<std::size_t>();
             }
 
-            if (options.contains("advance")) {
-                timeOptions.advance = options["advance"].get<std::size_t>();
+            if (config.contains("advance")) {
+                timeOptions.advance = config["advance"].get<std::size_t>();
             }
 
             spdlog::info("Creating TimeWindowOperator with size={}, slide={}, advance={}", timeOptions.size, timeOptions.slide.has_value() ? std::to_string(timeOptions.slide.value()) : "default" ,timeOptions.advance.has_value() ? std::to_string(timeOptions.advance.value()) : "default");
