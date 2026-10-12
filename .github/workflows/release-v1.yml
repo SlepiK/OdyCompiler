@@ -1,0 +1,138 @@
+name: release-v1
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-library:
+    name: Build OdyPlan
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install CMake 4.1
+        run: |
+          pip install cmake==4.1.0
+          echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libstdc++-14-dev \
+            libzstd-dev \
+            zstd \
+            ninja-build \
+            libspdlog-dev \
+            nlohmann-json3-dev \
+            libfmt-dev \
+            libffi-dev \
+            libedit-dev \
+            libcurl4-openssl-dev \
+            libcli11-dev \
+            libboost-dev \
+            libboost-filesystem-dev \
+            libboost-system-dev
+
+      - name: Remove system LLVM/Clang
+        run: |
+          sudo apt-get remove -y llvm* clang* libclang*
+          sudo apt-get autoremove -y
+
+      - name: Install LLVM 22
+        run: |
+          wget -q https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22 all
+          
+          echo "/usr/bin" >> $GITHUB_PATH
+          echo "LLVM_CONFIG=/usr/bin/llvm-config-22" >> $GITHUB_ENV
+
+      - name: Verify toolchain
+        run: |
+          clang-tidy-22 --version
+          clang++-22 --version
+          llvm-config-22 --version
+          cmake --version  
+          echo "LLVM_DIR: ${LLVM_DIR}"
+
+      - name: Copy OdyPlan from Repo
+        run: |
+          TARBALL="dependencies/odyplan-${{ env.ODYPLAN_VERSION }}-linux-x86_64.tar.gz"
+
+          echo "Checking for ${TARBALL}..."
+          if [ ! -f "${TARBALL}" ]; then
+            echo "ERROR: ${TARBALL} not found!"
+            echo "Available files in dependencies/:"
+            ls -la dependencies/ 2>/dev/null || echo "Directory does not exist"
+            exit 1
+          fi
+
+          echo "Found ${TARBALL}"
+          cp "${TARBALL}" odyplan.tar.gz
+
+      - name: Extract OdyPlan
+        run: |
+          mkdir -p ${{ env.ODYPLAN_ROOT }}
+          tar -xzf odyplan.tar.gz -C ${{ env.ODYPLAN_ROOT }} --strip-components=1
+          rm odyplan.tar.gz
+          
+          echo "OdyPlan extracted to ${{ env.ODYPLAN_ROOT }}"
+          ls -la ${{ env.ODYPLAN_ROOT }}
+
+      - name: Setup OdyPlan environment
+        run: |
+          echo "OdyPlan_DIR=${{ env.ODYPLAN_ROOT }}/lib64/cmake/OdyPlan" >> $GITHUB_ENV
+          echo "ODYPLAN_ROOT=${{ env.ODYPLAN_ROOT }}" >> $GITHUB_ENV
+
+
+      - name: Configure OdyCompiler
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_INSTALL_PREFIX=/tmp/odycompiler-install \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DOdyPlan_ROOT=${{ env.ODYPLAN_ROOT }} \
+
+      - name: Build OdyCompiler
+        run: |
+          cmake --build build --target odycompiler -j$(nproc)
+
+      - name: Create Release Package
+        id: package
+        run: |
+          cd /tmp/odycompiler-install
+
+          cat > VERSION.txt << EOF
+          OdyCompiler Release
+          Version: ${{ github.event.release.tag_name }}
+          Build: ${{ github.sha }}
+          Date: $(date -u)
+          LLVM: 22.1.8
+          Ubuntu: 24.04
+          EOF
+          
+          tar -czvf ../odycompiler-${{ github.event.release.tag_name }}-linux-x86_64.tar.gz .
+
+          ls -lh /tmp/odycompiler-${{ github.event.release.tag_name }}-linux-x86_64.tar.gz
+          echo "filename=odycompiler-${{ github.event.release.tag_name }}-linux-x86_64.tar.gz" >> $GITHUB_OUTPUT
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      - name: Upload to Release
+        run: |
+          cd /tmp
+          gh release upload ${{ github.event.release.tag_name }} \
+            ${{ steps.package.outputs.filename }} \
+            --repo ${{ github.repository }} \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
