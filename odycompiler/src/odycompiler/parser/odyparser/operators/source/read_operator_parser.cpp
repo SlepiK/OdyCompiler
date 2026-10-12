@@ -31,19 +31,17 @@ namespace sierra::odycompiler::parser::odyparser::operators::source::read {
             }
 
             const std::string protocol = config.value("protocol", "JSON");
-            int formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON);  // Default
+            int formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON);
 
             if (protocol == "NDJSON") {
                 formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON);
             }
             else if (protocol == "JSON") {
-                // 🎯 Bei "JSON": Format über Dateierweiterung entscheiden
                 if (filePath.ends_with(".ndjson")) {
                     formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON);
                 } else if (filePath.ends_with(".json")) {
                     formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::JSON);
                 } else {
-                    // Fallback für andere Extensions
                     formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::JSON);
                 }
             }

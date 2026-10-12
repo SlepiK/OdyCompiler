@@ -124,11 +124,8 @@ namespace sierra::odycompiler::parser::odyparser {
     }
 
     nlohmann::json OdysseusPlanParser::configStrToJson(const std::string &config) {
+        //QD - Change later by something better
         std::string jsonStr = config;
-
-        for (char &c: jsonStr) {
-            if (c == '\'') c = '"';
-        }
 
         std::string inner = trim(jsonStr);
         if (inner.starts_with('{') && inner.ends_with('}')) {
@@ -139,54 +136,57 @@ namespace sierra::odycompiler::parser::odyparser {
 
         size_t i = 0;
         while (i < inner.size()) {
-            while (i < inner.size() && std::isspace(inner[i])) {
-                i++;
-            }
-
-            if (i >= inner.size()) {
-                break;
-            }
+            while (i < inner.size() && std::isspace(inner[i])) i++;
+            if (i >= inner.size()) break;
 
             const size_t keyStart = i;
-            while (i < inner.size() && inner[i] != '=' && inner[i] != ':') {
-                i++;
-            }
-
-            if (i >= inner.size()) {
-                break;
-            }
+            while (i < inner.size() && inner[i] != '=' && inner[i] != ':') i++;
+            if (i >= inner.size()) break;
 
             std::string key = trim(inner.substr(keyStart, i - keyStart));
             i++;
 
             while (i < inner.size() && std::isspace(inner[i])) i++;
-            if (i >= inner.size()) {
-                break;
-            }
+            if (i >= inner.size()) break;
 
             std::string value;
-            if (inner[i] == '"') {
-                const std::size_t valueStart = i;
+
+            if (inner[i] == '"' || inner[i] == '\'') {
+                const char quoteChar = inner[i];
                 i++;
-                while (i < inner.size() && inner[i] != '"') {
-                    if (inner[i] == '\\' && i + 1 < inner.size()) {
-                        i++;
-                    }
+                std::string rawValue;
+                while (i < inner.size() && inner[i] != quoteChar) {
+                    rawValue += inner[i];
                     i++;
                 }
                 i++;
-                value = inner.substr(valueStart, i - valueStart);
+
+                if (isExpressionField(key)) {
+                    spdlog::debug("Parsing expression for key '{}': {}", key, rawValue);
+                    nlohmann::json exprJson = parseInfixExpression(rawValue);
+                    spdlog::debug("Parsed expression: {}", exprJson.dump());
+                    result[key] = exprJson;
+
+                    while (i < inner.size() && (std::isspace(inner[i]) || inner[i] == ',')) i++;
+                    continue;
+                } else {
+                    std::string escaped;
+                    for (char c: rawValue) {
+                        if (c == '"') escaped += "\\\"";
+                        else if (c == '\'') escaped += '"';
+                        else escaped += c;
+                    }
+                    value = "\"" + escaped + "\"";
+                }
             } else if (inner[i] == '[') {
                 const size_t valueStart = i;
                 int bracketDepth = 0;
                 bool inString = false;
                 while (i < inner.size()) {
-                    if (inner[i] == '"' && (i == 0 || inner[i - 1] != '\\')) {
-                        inString = !inString;
-                    } else if (!inString) {
-                        if (inner[i] == '[') {
-                            bracketDepth++;
-                        } else if (inner[i] == ']') {
+                    if (inner[i] == '"' && (i == 0 || inner[i - 1] != '\\')) inString = !inString;
+                    else if (!inString) {
+                        if (inner[i] == '[') bracketDepth++;
+                        else if (inner[i] == ']') {
                             bracketDepth--;
                             if (bracketDepth == 0) {
                                 i++;
@@ -197,17 +197,18 @@ namespace sierra::odycompiler::parser::odyparser {
                     i++;
                 }
                 value = inner.substr(valueStart, i - valueStart);
+                for (char &c: value) {
+                    if (c == '\'') c = '"';
+                }
             } else if (inner[i] == '{') {
                 const std::size_t valueStart = i;
                 int braceDepth = 0;
                 bool inString = false;
                 while (i < inner.size()) {
-                    if (inner[i] == '"' && (i == 0 || inner[i - 1] != '\\')) {
-                        inString = !inString;
-                    } else if (!inString) {
-                        if (inner[i] == '{') {
-                            braceDepth++;
-                        } else if (inner[i] == '}') {
+                    if (inner[i] == '"' && (i == 0 || inner[i - 1] != '\\')) inString = !inString;
+                    else if (!inString) {
+                        if (inner[i] == '{') braceDepth++;
+                        else if (inner[i] == '}') {
                             braceDepth--;
                             if (braceDepth == 0) {
                                 i++;
@@ -218,6 +219,9 @@ namespace sierra::odycompiler::parser::odyparser {
                     i++;
                 }
                 value = inner.substr(valueStart, i - valueStart);
+                for (char &c: value) {
+                    if (c == '\'') c = '"';
+                }
             } else {
                 const std::size_t valueStart = i;
                 while (i < inner.size() && inner[i] != ',' && inner[i] != '}' && !std::isspace(inner[i])) {
@@ -229,35 +233,25 @@ namespace sierra::odycompiler::parser::odyparser {
                 }
             }
 
-            bool expressionParsed = false;
-            if (isExpressionField(key) && !value.starts_with('{')) {
-                nlohmann::json exprJson = parseInfixExpression(value);
-                spdlog::debug("Parsed expression: {}", exprJson.dump());
-                result[key] = exprJson;
-                expressionParsed = true;
-            }
-
-            if (!expressionParsed) {
-                try {
-                    if (value.starts_with('[') || value.starts_with('{')) {
-                        result[key] = nlohmann::json::parse(value);
-                    } else if (value.starts_with('"')) {
-                        result[key] = nlohmann::json::parse(value);
-                    } else if (!value.empty() && (std::isdigit(value[0]) || value[0] == '-')) {
-                        result[key] = nlohmann::json::parse(value);
-                    } else {
-                        result[key] = value;
-                    }
-                } catch (nlohmann::json::parse_error &e) {
-                    spdlog::warn("Failed to parse '{}': {}", key, e.what());
+            try {
+                if (value.starts_with('[') || value.starts_with('{')) {
+                    result[key] = nlohmann::json::parse(value);
+                } else if (value.starts_with('"')) {
+                    result[key] = nlohmann::json::parse(value);
+                } else if (!value.empty() && (std::isdigit(value[0]) || value[0] == '-')) {
+                    result[key] = nlohmann::json::parse(value);
+                } else {
                     result[key] = value;
                 }
+            } catch (nlohmann::json::parse_error &e) {
+                spdlog::warn("Failed to parse '{}': {}", key, e.what());
+                result[key] = value;
             }
 
-            while (i < inner.size() && (std::isspace(inner[i]) || inner[i] == ',')) {
-                i++;
-            }
+            while (i < inner.size() && (std::isspace(inner[i]) || inner[i] == ',')) i++;
         }
+
+        spdlog::debug("Parsed config: {}", result.dump(2));
         return result;
     }
 
@@ -477,7 +471,7 @@ const std::unordered_map<std::string, std::string>& totupleRedirect) {
     }
 
     nlohmann::json OdysseusPlanParser::parseInfixExpression(const std::string& expr) {
-        std::string trimmed = trim(expr);
+        const std::string trimmed = trim(expr);
 
         static const std::vector<std::pair<std::string, int>> operators = {
             {" AND ", 0},

@@ -11,21 +11,52 @@ namespace sierra::odycompiler::parser::odyparser::operators::sink::write {
         try {
             spdlog::debug("Parsing WriteOperator");
 
-            if (!config.contains("params")) {
-                throw std::runtime_error("config must contain 'params' field");
+            std::string filePath;
+            if (config.contains("options") && config["options"].is_array()) {
+                for (const auto& opt : config["options"]) {
+                    if (opt.is_array() && opt.size() >= 2) {
+                        std::string key = opt[0];
+                        std::string value = opt[1];
+                        if (key == "filename") {
+                            filePath = value;
+                            break;
+                        }
+                    }
+                }
             }
 
-            const auto& params = config["params"];
-            if (!params.contains("path")) {
-                throw std::runtime_error("params must contain 'path' field");
+            if (filePath.empty()) {
+                throw std::runtime_error("ReadOperator options must contain 'filename' field");
             }
 
-            const int formatId = config.value("format", std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON));
+            const std::string protocol = config.value("protocol", "JSON");
+            int formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON);
+
+            if (protocol == "NDJSON") {
+                formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON);
+            }
+            else if (protocol == "JSON") {
+                if (filePath.ends_with(".ndjson")) {
+                    formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::NDJSON);
+                } else if (filePath.ends_with(".json")) {
+                    formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::JSON);
+                } else {
+                    formatId = std::to_underlying(odyplan::v3::basic::io::BuiltinIOFormat::JSON);
+                }
+            }
+
+            formatId = config.value("format", formatId);
+
             const auto ioFormat = static_cast<odyplan::v3::basic::io::IOFormatType>(formatId);
+            auto ioConfig = nlohmann::json::object();
+            ioConfig["path"] = filePath;
+            if (config.contains("source")) ioConfig["source"] = config["source"];
+            if (config.contains("wrapper")) ioConfig["wrapper"] = config["wrapper"];
+            if (config.contains("transport")) ioConfig["transport"] = config["transport"];
+            if (config.contains("protocol")) ioConfig["protocol"] = config["protocol"];
+            if (config.contains("dataHandler")) ioConfig["dataHandler"] = config["dataHandler"];
 
-            const auto ioConfig = config.value("params", nlohmann::json::object());
-
-            spdlog::info("Creating WriteOperator with format={}, path={}", formatId, params.value("path", "unknown"));
+            spdlog::info("Creating WriteOperator with format={}, path={}", formatId, filePath);
 
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::sink::write::logical::WriteOperator>(ioFormat,ioConfig));
         } catch (const std::exception &e) {

@@ -7,3 +7,4 @@ dataHandler='KeyValueObject',
 options=[['filename','nexmark.person.10k.ndjson']],
 schema=[['timestamp','STARTTIMESTAMP']]
 })
+selectperson = SELECT({PREDICATE='state = "Hawaii" '},inputPerson)

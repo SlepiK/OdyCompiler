@@ -11,14 +11,11 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::select {
         try {
             spdlog::debug("Parsing SelectOperator");
 
-            if (!config.contains("predicate")) {
-                throw std::runtime_error("config must contain 'predicate' field");
+            if (!config.contains("PREDICATE") && !config.contains("predicate")) {
+                throw std::runtime_error("config must contain 'PREDICATE' or 'predicate' field");
             }
 
-            const auto& predicateJson = config["predicate"];
-
-            spdlog::debug("Parsing expression");
-
+            const auto& predicateJson = config.contains("PREDICATE") ? config["PREDICATE"] : config["predicate"];
             auto predicate = expression::ExpressionParser::parseExpression(predicateJson);
 
             spdlog::info("Creating SelectOperator");

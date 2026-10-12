@@ -1,0 +1,10 @@
+inputPerson = ACCESS({
+source='json0',
+wrapper='GenericPull',
+transport='File',
+protocol='JSON',
+dataHandler='KeyValueObject',
+options=[['filename','nexmark.person.10k.ndjson']],
+schema=[['timestamp','STARTTIMESTAMP']]
+})
+elemwin = ELEMENTWINDOW({size = 5, slide = 3}, inputPerson)

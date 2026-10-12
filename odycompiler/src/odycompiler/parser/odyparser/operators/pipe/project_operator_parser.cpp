@@ -11,7 +11,6 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::project {
         try {
             spdlog::debug("Parsing ProjectOperator");
 
-            spdlog::info("Config: {}", config.dump(2));
             if (!config.contains("attributes")) {
                 throw std::runtime_error("ProjectOperator config must contain 'attributes' field");
             }

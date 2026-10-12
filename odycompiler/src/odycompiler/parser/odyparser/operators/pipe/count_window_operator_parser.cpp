@@ -11,17 +11,11 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::window {
         try {
             spdlog::debug("Parsing CountWindowOperator");
 
-            if (!config.contains("options")) {
-                throw std::runtime_error("config must contain 'options' field");
-            }
-
-            const auto options = config.value("options", nlohmann::json::object());
-
             odyplan::v3::basic::operators::pipe::window::details::CountWindowOptions countOptions;
 
-            countOptions.size = options.value<std::uint64_t>("size", 1);
-            countOptions.slide = options.value<std::uint64_t>("slide", 1);
-            countOptions.advance = options.value<std::uint64_t>("advance", 1);
+            countOptions.size = config.value<std::uint64_t>("size", 1);
+            countOptions.slide = config.value<std::uint64_t>("slide", 1);
+            countOptions.advance = config.value<std::uint64_t>("advance", 1);
 
             spdlog::info("Creating CountWindowOperator with size={}, slide={}, advance={}", countOptions.size, countOptions.slide, countOptions.advance);
 
