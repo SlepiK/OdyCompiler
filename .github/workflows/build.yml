@@ -107,7 +107,7 @@ jobs:
           cmake --build build --target odycompiler -j$(nproc)
 
       - name: Install OdyCompiler
-        run: cmake --install build
+        run: cmake --install build --prefix /tmp/odycompiler-install
 
       - name: Build Examples
         run: cmake --build build --target odycompiler_example_all
