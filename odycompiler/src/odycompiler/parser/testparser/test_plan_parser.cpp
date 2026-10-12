@@ -73,7 +73,7 @@ namespace sierra::odycompiler::parser::testparser {
         return std::make_unique<sierra::odyplan::v3::core::logical::plan::Plan>(std::move(lPlan));
     }
 
-    const std::string& TestPlanParser::getName() const {
+    const std::string_view TestPlanParser::getName() const {
         return PARSER;
     }
 }
