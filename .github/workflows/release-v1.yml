@@ -108,6 +108,9 @@ jobs:
         run: |
           cmake --build build --target odycompiler -j$(nproc)
 
+      - name: Install OdyCompiler
+        run: cmake --install build
+
       - name: Create Release Package
         id: package
         run: |
