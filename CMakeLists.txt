@@ -6,7 +6,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
 
 option(ENABLE_TOOLING "Enable clang-tidy/format targets" ON)
 option(ENABLE_CLANG_TIDY "Run clang-tidy as part of the build" OFF)
@@ -46,30 +45,4 @@ if(ENABLE_TOOLING)
     finalize_lint_targets()
 endif ()
 
-install(EXPORT OdyCompilerTargets
-        FILE OdyCompilerTargets.cmake
-        NAMESPACE odycompiler::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/OdyCompiler
-)
-
-configure_package_config_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/OdyCompilerConfig.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/OdyCompilerConfig.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/OdyCompiler
-)
-
-write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/OdyCompilerConfigVersion.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
-)
-
-install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/OdyCompilerConfig.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/OdyCompilerConfigVersion.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/OdyCompiler
-)
-
-message(STATUS "=== OdyCompiler Build Done ===")
-message(STATUS "Version: ${ODYCOMPILER_VERSION}")
-message(STATUS "Install Prefix: ${CMAKE_INSTALL_PREFIX}")
+install(TARGETS odycompiler RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
