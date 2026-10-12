@@ -44,5 +44,3 @@ add_subdirectory(examples)
 if(ENABLE_TOOLING)
     finalize_lint_targets()
 endif ()
-
-install(TARGETS odycompiler RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

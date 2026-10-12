@@ -59,6 +59,25 @@ target_compile_definitions(${EXE_NAME} PRIVATE
         ODYCOMPILER_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
+set_target_properties(${EXE_NAME} PROPERTIES
+        INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
+)
+
+install(TARGETS ${EXE_NAME}
+        RUNTIME_DEPENDENCIES
+        DIRECTORIES
+        ${LLVM_LIB_DIR_RUNTIME}
+        $ENV{ODYPLAN_ROOT}/lib
+        $ENV{ODYPLAN_ROOT}/lib64
+        PRE_EXCLUDE_REGEXES
+        "^libc\\.so" "^libm\\.so" "^libpthread" "^libdl" "^librt"
+        "^ld-linux" "^libstdc\\+\\+" "^libgcc_s"
+        POST_EXCLUDE_REGEXES
+        "^/lib64/ld-linux"
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
 if(ENABLE_TOOLING)
     enable_clang_tidy_on_target(${LIB_NAME})
     enable_clang_tidy_on_target(${EXE_NAME})
