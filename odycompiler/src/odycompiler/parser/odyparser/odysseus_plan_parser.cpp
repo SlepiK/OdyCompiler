@@ -32,13 +32,13 @@ namespace sierra::odycompiler::parser::odyparser {
             if (!inBlock) {
                 currentBlock = line;
                 braceCount = countBrace(line);
-                if (line.contains('{')) inBlock = true;
+                inBlock = true;
             } else {
                 currentBlock += " " + line;
                 braceCount += countBrace(line);
             }
 
-            if (inBlock && braceCount == 0) {
+            if (braceCount == 0) {
                 if (auto op = parseOperatorLine(currentBlock)) {
                     std::string type = op->at("type").get<std::string>();
 
@@ -100,17 +100,24 @@ namespace sierra::odycompiler::parser::odyparser {
         const std::string type = trim(rest.substr(0, openParen));
         const std::string content = rest.substr(openParen + 1, closeParen - openParen - 1);
 
-        const std::size_t braceEnd = content.rfind('}');
-        const std::string configStr = (braceEnd != std::string::npos) ?
-                                content.substr(0, braceEnd + 1) : content;
-        std::string argsStr = (braceEnd != std::string::npos && braceEnd + 1 < content.size()) ?
-                              content.substr(braceEnd + 1) : "";
+        std::string configStr;
+        std::string argsStr;
 
-        if (!argsStr.empty() && argsStr[0] == ',') {
-            argsStr = argsStr.substr(1);
+        if (const std::size_t braceEnd = content.rfind('}'); braceEnd != std::string::npos) {
+            configStr = content.substr(0, braceEnd + 1);
+            argsStr = content.substr(braceEnd + 1);
+        } else {
+            argsStr = content;
         }
 
-        const nlohmann::json config = configStrToJson(configStr);
+        argsStr = trim(argsStr);
+        if (!argsStr.empty() && argsStr[0] == ',') {
+            argsStr = trim(argsStr.substr(1));
+        }
+
+        const nlohmann::json config = configStr.empty()
+            ? nlohmann::json::object()
+            : configStrToJson(configStr);
 
         nlohmann::json op;
         op["id"] = name;

@@ -5,7 +5,7 @@
 > **https://gitlab.example.com/sierra/odycompiler**
 >
 > Please open issues, merge requests, and questions there. This repository is kept read-only for reference.
-> The last release published here is [**v0.1.5.2**](https://github.com/SlepiK/OdyCompiler/releases/tag/v0.1.5.2).
+> The last release published here is [**v0.1.5.3**](https://github.com/SlepiK/OdyCompiler/releases/tag/v0.1.5.3).
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Versions & Releases
 
-The last release published on this repository is [**v0.1.5.2**](https://github.com/SlepiK/OdyCompiler/releases/tag/v0.1.5.2). For anything newer, see the GitLab repository linked above.
+The last release published on this repository is [**v0.1.5.3**](https://github.com/SlepiK/OdyCompiler/releases/tag/v0.1.5.3). For anything newer, see the GitLab repository linked above.
 
 ## Platform Support
 

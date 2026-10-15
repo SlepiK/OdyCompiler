@@ -11,7 +11,9 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::un {
         try {
             spdlog::debug("Parsing UnionOperator");
 
-            const bool assureOrder = config.value("assure_order", true);
+            const auto& j = config.value("assureOrder", nlohmann::json(true));
+            const bool assureOrder = j.is_string() ? nlohmann::json::parse(j.get<std::string>()).get<bool>()
+                                                   : j.get<bool>();
 
             spdlog::info("Creating UnionOperator");
 
