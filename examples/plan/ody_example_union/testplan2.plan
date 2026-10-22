@@ -1,0 +1,19 @@
+inputPerson = ACCESS({
+    source='json0',
+    wrapper='GenericPull',
+    transport='File',
+    protocol='JSON',
+    dataHandler='KeyValueObject',
+    options=[['filename','nexmark.person.10k.ndjson']],
+ schema=[['timestamp','STARTTIMESTAMP']] /// only used for definition of START- or ENDTIMESTAMP
+})
+inputPersonRev = ACCESS({
+    source='json1',
+    wrapper='GenericPull',
+    transport='File',
+    protocol='JSON',
+    dataHandler='KeyValueObject',
+    options=[['filename','nexmark.person.10k.rev.ndjson']],
+ schema=[['timestamp','STARTTIMESTAMP']] /// only used for definition of START- or ENDTIMESTAMP
+})
+uno = UNION({assureOrder=false},inputPerson,inputPersonRev)
