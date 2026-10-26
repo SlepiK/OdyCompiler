@@ -45,10 +45,14 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::join {
                          joinOptions.allowedLateness,
                          std::to_underlying(joinOptions.card));
 
+            /*
+             * ToDo:Implement Watermark behaviour like in Odysseus and then reactivate that users can set assureOrder via OdyCompiler.
+             * assureOrder = true means we enforce always that the output is ordered
+             */
             return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::join::logical::JoinOperator>(
                 joinOptions,
                 std::move(predicate),
-                assureOrder
+                true
             ));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse JoinOperator: {}", e.what()));

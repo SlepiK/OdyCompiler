@@ -17,7 +17,11 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::un {
 
             spdlog::info("Creating UnionOperator");
 
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::union_::logical::UnionOperator>(assureOrder));
+            /*
+             * ToDo:Implement Watermark behaviour like in Odysseus and then reactivate that users can set assureOrder via OdyCompiler.
+             * assureOrder = true means we enforce always that the output is ordered
+             */
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::union_::logical::UnionOperator>(true));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse UnionOperator: {}", e.what()));
         }

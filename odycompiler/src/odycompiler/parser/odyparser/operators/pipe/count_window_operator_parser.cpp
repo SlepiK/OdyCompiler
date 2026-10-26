@@ -22,10 +22,10 @@ namespace sierra::odycompiler::parser::odyparser::operators::pipe::window {
             spdlog::info("Creating CountWindowOperator with size={}, slide={}, advance={}", countOptions.size, countOptions.slide, countOptions.advance);
 
             /*
-             * ToDo:Check why isOutOfOrder and assureOrder is in Odysseus something weird implemented... . Due to the fact,
-             * that this operator needs currently to run always a puffer for watermarks, because we always have watermarks, its directly set to false
+             * ToDo:Implement Watermark behaviour like in Odysseus and then reactivate that users can set assureOrder via OdyCompiler.
+             * assureOrder = true means we enforce always that the output is ordered
              */
-            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::CountWindowOperator>(countOptions,/*assureOrder*/ false));
+            return lPlan.addOperator(std::make_unique<odyplan::v3::basic::operators::pipe::window::logical::CountWindowOperator>(countOptions,/*assureOrder*/ true));
         } catch (const std::exception &e) {
             throw std::runtime_error(fmt::format("Failed to parse CountWindowOperator: {}", e.what()));
         }
