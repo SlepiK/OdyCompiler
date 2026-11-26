@@ -1,8 +1,8 @@
 > [!IMPORTANT]\
 > **This repository is archived**\
-> OdyCompiler is no longer developed here. Active development has moved to:
+> OdyCompiler is no longer developed here. (Active) development has moved to:
 >
-> **https://gitlab.example.com/sierra/odycompiler**
+> **https://odysseus.informatik.uni-oldenburg.de** **https://git.swl.informatik.uni-oldenburg.de**
 >
 > Please open issues, merge requests, and questions there. This repository is kept read-only for reference.
 > The last release published here is [**v0.1.5.5**](https://github.com/SlepiK/OdyCompiler/releases/tag/v0.1.5.5).
